@@ -20,7 +20,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var ground: SKSpriteNode?
     private var player: SKSpriteNode!
     private var spawnPoint: CGPoint?
+//    #if os(iOS)
     private var virtualController: GCVirtualController?
+//    #endif
+//    private var physicController: GCController?
     private var contactedNpcId: String?
     private var dialogSystem = DialogSystem()
     private var visNovNode = SKVisNovNode()
@@ -133,6 +136,75 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupControllerHandlers() {
+//        #if os(iOS)
+        // iPhone/iPad: Start with virtual controller
+        setupVirtualController()
+
+        // Observe for physical controllers
+//        NotificationCenter.default.addObserver(forName: .GCControllerDidConnect, object: nil, queue: .main) { _ in
+//            self.virtualController?.disconnect()
+//            self.setupPhysicalController()
+//        }
+//
+//        NotificationCenter.default.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { _ in
+//            self.setupVirtualController()
+//        }
+
+//        #elseif os(macOS)
+//        // Mac: Use keyboard input by default
+//        setupKeyboardInput()
+//
+//        NotificationCenter.default.addObserver(forName: .GCControllerDidConnect, object: nil, queue: .main) { _ in
+//            self.setupPhysicalController()
+//        }
+//        
+//        NotificationCenter.default.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { _ in
+//            self.setupKeyboardInput()
+//        }
+//        #endif
+    }
+    
+    func setupKeyboardInput() {
+        GCKeyboard.coalesced?.keyboardInput?.keyChangedHandler = { [weak self] _,_, keyCode, pressed in
+            guard pressed else { return }
+
+            switch keyCode {
+            case .leftArrow:
+                self?.joystickDirection = CGVector(dx: -1, dy: 0)
+                self?.handleWalking()
+            case .rightArrow:
+                self?.joystickDirection = CGVector(dx: 1, dy: 0)
+                self?.handleWalking()
+            case .spacebar, .returnOrEnter:
+                self?.tryStartNpcDialog()
+            default:
+                break
+            }
+        }
+    }
+
+
+    
+    func setupPhysicalController() {
+        guard let controller = GCController.controllers().first,
+              let gamepad = controller.extendedGamepad else {
+            return
+        }
+
+        gamepad.leftThumbstick.valueChangedHandler = { [weak self] _, x, y in
+            self?.joystickDirection = CGVector(dx: CGFloat(x), dy: 0)
+            self?.handleWalking()
+        }
+
+        gamepad.buttonA.pressedChangedHandler = { [weak self] _, _, pressed in
+            if pressed {
+                self?.tryStartNpcDialog()
+            }
+        }
+    }
+    
+    func setupVirtualController() {
+//        #if os(iOS)
         
         let virtualConfiguration = GCVirtualController.Configuration()
 
@@ -153,6 +225,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
             }
         }
+//        #endif
     }
     
     func handleWalking() {
@@ -235,8 +308,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupDialogSystem() {
-        dialogSystem.setPlayerPortraits(playerPortrait) // Use your actual player portraits dictionary
-        dialogSystem.registerDialogTree(npcSmith)          // You should already have this in DialogData.swift
+        dialogSystem.setPlayerPortraits(playerPortrait)
+        dialogSystem.registerDialogTree(npcSmith)
 
         dialogSystem.onDialogLineDisplayed = { [weak self] line, portrait in
             let texture = portrait != nil ? SKTexture(imageNamed: portrait!) : nil
@@ -251,8 +324,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         dialogSystem.onDialogEnded = { [weak self] in
             self?.visNovNode.clearDialog()
-            self?.virtualController?.connect()
             self?.visNovNode.isHidden = true
+//            #if os(iOS)
+            self?.virtualController?.connect()
+//            #endif
         }
     }
     
@@ -261,6 +336,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         print("Starting dialog with: \(npcId)")
         dialogSystem.startDialog(npcId: npcId, state: "quest_01")
         visNovNode.isHidden = false
+//        #if os(iOS)
         virtualController?.disconnect()
+//        #endif
     }
 }

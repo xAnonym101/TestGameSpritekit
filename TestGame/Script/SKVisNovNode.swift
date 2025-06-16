@@ -56,11 +56,6 @@ class SKVisNovNode: SKNode {
         npcSprite.zPosition = 1
         addChild(npcSprite)
         
-        // Positioning sprites bottom left/right
-        let spriteYOffset: CGFloat = backgroundTextNode.size.height / 2 + playerSprite.size.height / 0.75
-        playerSprite.position = CGPoint(x: 300, y: backgroundTextNode.position.y + spriteYOffset)
-        npcSprite.position = CGPoint(x: -300, y: backgroundTextNode.position.y + spriteYOffset)
-        
         // Dialog box background
         backgroundTextNode.color = .black
         backgroundTextNode.alpha = 1
@@ -68,6 +63,10 @@ class SKVisNovNode: SKNode {
         backgroundTextNode.zPosition = 1
         backgroundTextNode.position = CGPoint(x: 0, y: (-frame.height / 1.5)+(backgroundTextNode.size.height / 0.9))
         addChild(backgroundTextNode)
+        
+        // Positioning sprites bottom left/right
+        playerSprite.position = CGPoint(x: backgroundTextNode.position.x - backgroundTextNode.size.width / 1.5, y: backgroundTextNode.position.y)
+        npcSprite.position = CGPoint(x: backgroundTextNode.position.x + backgroundTextNode.size.width / 1.5, y: backgroundTextNode.position.y)
         
         // Name Label
         textNameNode.fontColor = .white
