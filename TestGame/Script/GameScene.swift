@@ -39,7 +39,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     //    var backgroundImageScaler: CGFloat = 2.9
     var foregroundLayer: BackgroundLayer!
     var midLayer: BackgroundLayer!
-    var backLayer: BackgroundLayer!
     
     
     override func sceneDidLoad() {
@@ -74,8 +73,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         visNovNode.resizeBackgroundNode(to: self.view!)
         visNovNode.isHidden = true
         setupDialogSystem()
-        midLayer = BackgroundLayer(imageName: "forest-2", imageScaler: 2.7, zPos: -10, xPos: 1500, yPos: -430, scene: self, minTiles: 4, maxTiles: 5)
-        foregroundLayer = BackgroundLayer(imageName: "forest-1", imageScaler: 3.5, zPos: -5, xPos: 1200, yPos: -740, scene: self, minTiles: 2, maxTiles: 3)
+        midLayer = BackgroundLayer(imageName: "forest-2", imageScaler: 1.3, zPos: -10, xPos: 1500, yPos: -370, scene: self, minTiles: 5, maxTiles: 6)
+        foregroundLayer = BackgroundLayer(imageName: "forest-1", imageScaler: 2.3, zPos: -5, xPos: 1200, yPos: -650, scene: self, minTiles: 3, maxTiles: 4)
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
@@ -311,7 +310,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player = SKSpriteNode(texture: idleFrames[0])
         player.position = spawnPoint!
         player.zPosition = 1
-        player.physicsBody = SKPhysicsBody(rectangleOf: player.size)
+//        player.physicsBody = SKPhysicsBody(rectangleOf: player.size)
         player.size = CGSize(width: 51*2, height: 37*2)
         
         // Physics
@@ -347,7 +346,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             npcNode.physicsBody?.categoryBitMask = PhysicsCategory.npc
             npcNode.physicsBody?.contactTestBitMask = PhysicsCategory.player
             npcNode.physicsBody?.collisionBitMask = PhysicsCategory.ground
-            npcNode.physicsBody?.isDynamic = false
+            npcNode.physicsBody?.isDynamic = true
             npcNode.physicsBody?.affectedByGravity = true
         }
     }
