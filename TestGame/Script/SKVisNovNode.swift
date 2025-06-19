@@ -14,23 +14,16 @@ class SKVisNovNode: SKNode {
     private let backgroundNode = SKSpriteNode()
     private let textNovNode = SKLabelNode()
     private let textNameNode = SKLabelNode()
-//    private let backgroundNameNode: SKSpriteNode
     private let backgroundTextNode = SKSpriteNode(color: .black, size: .zero)
     
     private var choiceButtons : [SKButtonNode] = []
     private var onChoiceSelected : ((Int) -> Void)?
     private var buttonStartY = CGFloat()
     
+    private var targetHeightPortrait : CGFloat = 500
+    
     
     override init() {
-        
-//        self.playerSprite = SKSpriteNode()
-//        self.npcSprite = SKSpriteNode()
-//        self.backgroundNode = SKSpriteNode(color: .black, size: .zero)
-//        self.textNovNode = SKLabelNode()
-//        self.textNameNode = SKLabelNode()
-//        self.backgroundNameNode = SKSpriteNode(color: .black, size: .zero)
-//        self.backgroundTextNode = SKSpriteNode(color: .black, size: .zero)
         super.init()
         
         zPosition = 100
@@ -46,13 +39,13 @@ class SKVisNovNode: SKNode {
         addChild(backgroundNode)
         
         // Portraits
-        playerSprite.size = CGSize(width: 140, height: 140)
         playerSprite.alpha = 0.4
+        playerSprite.anchorPoint = CGPoint(x: 0.5, y: 0)
         playerSprite.zPosition = 1
         addChild(playerSprite)
         
-        npcSprite.size = CGSize(width: 140, height: 140)
         npcSprite.alpha = 0.4
+        npcSprite.anchorPoint = CGPoint(x: 0.5, y: 0)
         npcSprite.zPosition = 1
         addChild(npcSprite)
         
@@ -65,8 +58,8 @@ class SKVisNovNode: SKNode {
         addChild(backgroundTextNode)
         
         // Positioning sprites bottom left/right
-        playerSprite.position = CGPoint(x: backgroundTextNode.position.x - backgroundTextNode.size.width / 1.5, y: backgroundTextNode.position.y)
-        npcSprite.position = CGPoint(x: backgroundTextNode.position.x + backgroundTextNode.size.width / 1.5, y: backgroundTextNode.position.y)
+        playerSprite.position = CGPoint(x: backgroundTextNode.position.x - backgroundTextNode.size.width / 1.5, y: backgroundTextNode.position.y * 0.35)
+        npcSprite.position = CGPoint(x: backgroundTextNode.position.x + backgroundTextNode.size.width / 1.5, y: backgroundTextNode.position.y * 0.35)
         
         // Name Label
         textNameNode.fontColor = .white
@@ -107,18 +100,27 @@ class SKVisNovNode: SKNode {
         textNovNode.text = line.text
 
         // Determine who is speaking and update alpha
-        if line.speaker == "Player" {
-            if let texture = texture {
+        if let texture = texture {
+            let aspectRatio = texture.size().width / texture.size().height
+            let targetWidth = targetHeightPortrait * aspectRatio
+            let newSize = CGSize(width: targetWidth, height: targetHeightPortrait)
+
+            if line.speaker == "Player" {
                 playerSprite.texture = texture
-            }
-            playerSprite.alpha = 1.0
-            npcSprite.alpha = 0.4
-        } else {
-            if let texture = texture {
+                playerSprite.size = newSize
+                playerSprite.alpha = 1.0
+                npcSprite.alpha = 0.4
+            } else {
                 npcSprite.texture = texture
+                npcSprite.size = newSize
+                npcSprite.alpha = 1.0
+                playerSprite.alpha = 0.4
             }
-            npcSprite.alpha = 1.0
+            
+        } else {
+            // If no texture provided, fallback to dim both
             playerSprite.alpha = 0.4
+            npcSprite.alpha = 0.4
         }
     }
     
