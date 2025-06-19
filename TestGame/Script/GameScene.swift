@@ -34,11 +34,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var audioFootstep: SKAction!
     var joystickDirection = CGVector.zero
     
+<<<<<<< Updated upstream
     //    var backgroundContainer = SKNode()
     //    var backgroundImageName = "forest-2"
     //    var backgroundImageScaler: CGFloat = 2.9
     var foregroundLayer: BackgroundLayer!
     var midLayer: BackgroundLayer!
+=======
+    var backgroundBg: ParrallaxBackground!
+    var farthestBg: ParrallaxBackground!
+    var farBg: ParrallaxBackground!
+    var midBg: ParrallaxBackground!
+    var nearestBg: ParrallaxBackground!
+    var effectBg: ParrallaxBackground!
+    
+>>>>>>> Stashed changes
     
     
     override func sceneDidLoad() {
@@ -55,14 +65,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupCameraPlayer()
         setupControllerHandlers()
         setupNpc()
+<<<<<<< Updated upstream
         loadTileMap()
         //        if let tileMap = self.childNode(withName: "GroundTileMap") as? SKTileMapNode {
         //            setupPhysicsForTileMap(tileMap: tileMap, targetTileName: "grass-tile", physicsCategory: PhysicsCategory.ground)
         //        }
         
+=======
+        self.backgroundBg = ParrallaxBackground(imageName: "Background", imageScaler: 0.5, zPos: -6, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.farthestBg = ParrallaxBackground(imageName: "TreeVeryBack", imageScaler: 0.5, zPos: -5, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.farBg = ParrallaxBackground(imageName: "TreeBack", imageScaler: 0.5, zPos: -4, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.effectBg = ParrallaxBackground(imageName: "LightEffect", imageScaler: 0.5, zPos: -3, xPos: 80.893, yPos: -330.587, scene: self, minTiles: 4, maxTiles: 6, blendMode: .add, randomZMin: -5, randomZMax: -1)
+        self.midBg = ParrallaxBackground(imageName: "TreeFront", imageScaler: 0.5, zPos: -2, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.nearestBg = ParrallaxBackground(imageName: "TreeVeryFront", imageScaler: 0.5, zPos: -1, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+>>>>>>> Stashed changes
     }
-    
-    
+        
     override func didMove(to view: SKView) {
         visNovNode.position = CGPoint(
             x: frame.midX,
@@ -108,8 +126,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
     }
-    
-    
+
     override func update(_ currentTime: TimeInterval) {
         if self.lastUpdateTime == 0 {
             self.lastUpdateTime = currentTime
@@ -117,6 +134,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         let dt = currentTime - self.lastUpdateTime
         self.lastUpdateTime = currentTime
+<<<<<<< Updated upstream
         
         let baseSpeed: CGFloat = 200
         let dx = joystickDirection.dx * baseSpeed * CGFloat(dt)
@@ -131,6 +149,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 midLayer.update(playerX: player.position.x, direction: dx, speed: 0.05)
             }
         }
+=======
+        
+        if let movement = playerEntity.component(ofType: MovementComponent.self) {
+            movement.setDirection(joystickDirection)
+        }
+        
+        playerEntity.update(deltaTime: dt)
+
+        guard let camera = self.camera,
+              let playerNode = playerEntity.component(ofType: RenderComponent.self)?.node else { return }
+
+        camera.position = CGPoint(x: playerNode.position.x, y: playerNode.position.y + 150)
+
+        // 👇 Parallax update
+        let dx = joystickDirection.dx
+        let px = playerNode.position.x
+
+        // Smaller speed = slower background = further away
+        backgroundBg.update(playerX: px, direction: dx, speed: 0.02)
+        farthestBg.update(playerX: px, direction: dx, speed: 0.04)
+        farBg.update(playerX: px, direction: dx, speed: 0.07)
+        effectBg.update(playerX: px, direction: dx, speed: 0.07)
+        midBg.update(playerX: px, direction: dx, speed: 0.1)
+        nearestBg.update(playerX: px, direction: dx, speed: 0.0)
+>>>>>>> Stashed changes
     }
     
     

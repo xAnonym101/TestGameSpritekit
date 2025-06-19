@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+<<<<<<< Updated upstream:TestGame/Assets.xcassets/Player-Portrait.spriteatlas/player_portrait_sad.imageset/Contents.json
       "filename" : "player_portrait_sad.png",
       "idiom" : "universal",
       "scale" : "1x"
@@ -12,6 +13,10 @@
     {
       "idiom" : "universal",
       "scale" : "3x"
+=======
+      "filename" : "TreeFront.PNG",
+      "idiom" : "universal"
+>>>>>>> Stashed changes:TestGame/Assets.xcassets/Background.spriteatlas/TreeFront.imageset/Contents.json
     }
   ],
   "info" : {

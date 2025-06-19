@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+<<<<<<< Updated upstream:TestGame/Assets.xcassets/Player-Idle.spriteatlas/adventurer-idle-00.imageset/Contents.json
       "filename" : "adventurer-idle-00.png",
       "idiom" : "universal",
       "scale" : "1x"
@@ -12,6 +13,10 @@
     {
       "idiom" : "universal",
       "scale" : "3x"
+=======
+      "filename" : "Background.PNG",
+      "idiom" : "universal"
+>>>>>>> Stashed changes:TestGame/Assets.xcassets/Background.spriteatlas/Background.imageset/Contents.json
     }
   ],
   "info" : {
