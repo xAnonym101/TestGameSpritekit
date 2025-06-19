@@ -5,4 +5,27 @@
 //  Created by Syamsuddin Putra Riefli on 17/06/25.
 //
 
-import Foundation
+import GameplayKit
+
+class WispPointComponent: GKComponent {
+    var wispBlue: Int = 0
+    var wispRed: Int = 0
+    
+    var alignment: String {
+        if wispBlue > wispRed {
+            return "Good"
+        } else if wispRed > wispBlue {
+            return "Bad"
+        } else {
+            return "Neutral"
+        }
+    }
+    
+    func addWispBlue() {
+        wispBlue += 1
+    }
+    
+    func addWispRed() {
+        wispRed += 1
+    }
+}
