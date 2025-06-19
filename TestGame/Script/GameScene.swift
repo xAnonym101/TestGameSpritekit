@@ -31,6 +31,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var audioFootstep: SKAction!
     var joystickDirection = CGVector.zero
     
+    var backgroundBg: ParrallaxBackground!
+    var farthestBg: ParrallaxBackground!
+    var farBg: ParrallaxBackground!
+    var midBg: ParrallaxBackground!
+    var nearestBg: ParrallaxBackground!
+    var effectBg: ParrallaxBackground!
+    
+    
+    
     override func sceneDidLoad() {
         
         print("GameScene loaded")
@@ -45,9 +54,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupCameraPlayer()
         setupControllerHandlers()
         setupNpc()
+        self.backgroundBg = ParrallaxBackground(imageName: "Background", imageScaler: 0.5, zPos: -6, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.farthestBg = ParrallaxBackground(imageName: "TreeVeryBack", imageScaler: 0.5, zPos: -5, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.farBg = ParrallaxBackground(imageName: "TreeBack", imageScaler: 0.5, zPos: -4, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.effectBg = ParrallaxBackground(imageName: "LightEffect", imageScaler: 0.5, zPos: -3, xPos: 80.893, yPos: -330.587, scene: self, minTiles: 4, maxTiles: 6, blendMode: .add, randomZMin: -5, randomZMax: -1)
+        self.midBg = ParrallaxBackground(imageName: "TreeFront", imageScaler: 0.5, zPos: -2, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.nearestBg = ParrallaxBackground(imageName: "TreeVeryFront", imageScaler: 0.5, zPos: -1, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
     }
-    
-    
+        
     override func didMove(to view: SKView) {
         visNovNode.position = CGPoint(
             x: frame.midX,
@@ -91,31 +105,44 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
     }
-    
-    
+
     override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
-        
-        // Initialize _lastUpdateTime if it has not already been
-        if (self.lastUpdateTime == 0) {
+        if self.lastUpdateTime == 0 {
             self.lastUpdateTime = currentTime
         }
         
-        // Calculate time since last update
         let dt = currentTime - self.lastUpdateTime
-        
-        // Update entities
         self.lastUpdateTime = currentTime
-        if let movement = playerEntity.component(ofType: MovementComponent.self) {
-            movement.setDirection(joystickDirection)
-        }
+        
+        if visNovNode.isHidden == false {
+                joystickDirection = .zero
+                if let movement = playerEntity.component(ofType: MovementComponent.self) {
+                    movement.setDirection(.zero)
+                }
+            } else {
+                if let movement = playerEntity.component(ofType: MovementComponent.self) {
+                    movement.setDirection(joystickDirection)
+                }
+            }
         
         playerEntity.update(deltaTime: dt)
 
-        if let camera = self.camera,
-           let node = playerEntity.component(ofType: RenderComponent.self)?.node {
-            camera.position = CGPoint(x: node.position.x, y: node.position.y + 150)
-        }
+        guard let camera = self.camera,
+              let playerNode = playerEntity.component(ofType: RenderComponent.self)?.node else { return }
+
+        camera.position = CGPoint(x: playerNode.position.x, y: playerNode.position.y + 150)
+
+        // 👇 Parallax update
+        let dx = joystickDirection.dx
+        let px = playerNode.position.x
+
+        // Smaller speed = slower background = further away
+        backgroundBg.update(playerX: px, direction: dx, speed: 0.02)
+        farthestBg.update(playerX: px, direction: dx, speed: 0.04)
+        farBg.update(playerX: px, direction: dx, speed: 0.07)
+        effectBg.update(playerX: px, direction: dx, speed: 0.07)
+        midBg.update(playerX: px, direction: dx, speed: 0.1)
+        nearestBg.update(playerX: px, direction: dx, speed: 0.0)
     }
     
     func setupGround() {
@@ -140,21 +167,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupVirtualController() {
+        // Guard against duplicate setup
+        if virtualController != nil { return }
+        
         let virtualConfiguration = GCVirtualController.Configuration()
-
-        virtualConfiguration.elements = [GCInputLeftThumbstick,
-                                         GCInputButtonA,
-                                         GCInputButtonB]
+        virtualConfiguration.elements = [GCInputLeftThumbstick, GCInputButtonA, GCInputButtonB]
+        
         virtualController = GCVirtualController(configuration: virtualConfiguration)
         virtualController?.connect()
+        
         if let gamepad = virtualController?.controller?.extendedGamepad {
             gamepad.leftThumbstick.valueChangedHandler = { [weak self] _, x, y in
                 self?.joystickDirection = CGVector(dx: CGFloat(x), dy: 0)
             }
             
-            gamepad.buttonA.pressedChangedHandler = { [weak self] _,_, pressed in
-                if pressed {
+            gamepad.buttonA.pressedChangedHandler = { [weak self] _, _, pressed in
+                guard pressed else { return } // Only trigger on press (not release)
+                if self?.visNovNode.isHidden == true {
                     self?.tryStartNpcDialog()
+                } else {
+                    self?.dialogSystem.showNextDialogLine()
                 }
             }
         }
@@ -207,7 +239,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         entities.append(playerEntity)
     }
-
     
     func setupCameraPlayer() {
         guard let cameraNode = self.childNode(withName: "//SKCameraNode") as? SKCameraNode else {
@@ -255,11 +286,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         dialogSystem.onDialogEnded = { [weak self] in
-            self?.visNovNode.clearDialog()
-            self?.visNovNode.isHidden = true
-//            #if os(iOS)
-            self?.virtualController?.connect()
-//            #endif
+            guard let self = self else { return }
+            
+            self.visNovNode.clearDialog()
+            self.visNovNode.isHidden = true
+            
+            // 1. Disconnect and release the old controller
+            self.virtualController?.disconnect()
+            self.virtualController = nil
+            
+            // 2. Small delay to ensure cleanup
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // 3. Recreate and reconnect fresh controller
+                self.setupVirtualController()
+            }
         }
     }
     
