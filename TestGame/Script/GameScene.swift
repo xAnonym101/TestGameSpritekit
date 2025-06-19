@@ -114,9 +114,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let dt = currentTime - self.lastUpdateTime
         self.lastUpdateTime = currentTime
         
-        if let movement = playerEntity.component(ofType: MovementComponent.self) {
-            movement.setDirection(joystickDirection)
-        }
+        if visNovNode.isHidden == false {
+                joystickDirection = .zero
+                if let movement = playerEntity.component(ofType: MovementComponent.self) {
+                    movement.setDirection(.zero)
+                }
+            } else {
+                if let movement = playerEntity.component(ofType: MovementComponent.self) {
+                    movement.setDirection(joystickDirection)
+                }
+            }
         
         playerEntity.update(deltaTime: dt)
 
@@ -160,21 +167,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupVirtualController() {
+        // Guard against duplicate setup
+        if virtualController != nil { return }
+        
         let virtualConfiguration = GCVirtualController.Configuration()
-
-        virtualConfiguration.elements = [GCInputLeftThumbstick,
-                                         GCInputButtonA,
-                                         GCInputButtonB]
+        virtualConfiguration.elements = [GCInputLeftThumbstick, GCInputButtonA, GCInputButtonB]
+        
         virtualController = GCVirtualController(configuration: virtualConfiguration)
         virtualController?.connect()
+        
         if let gamepad = virtualController?.controller?.extendedGamepad {
             gamepad.leftThumbstick.valueChangedHandler = { [weak self] _, x, y in
                 self?.joystickDirection = CGVector(dx: CGFloat(x), dy: 0)
             }
             
-            gamepad.buttonA.pressedChangedHandler = { [weak self] _,_, pressed in
-                if pressed {
+            gamepad.buttonA.pressedChangedHandler = { [weak self] _, _, pressed in
+                guard pressed else { return } // Only trigger on press (not release)
+                if self?.visNovNode.isHidden == true {
                     self?.tryStartNpcDialog()
+                } else {
+                    self?.dialogSystem.showNextDialogLine()
                 }
             }
         }
@@ -274,11 +286,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         dialogSystem.onDialogEnded = { [weak self] in
-            self?.visNovNode.clearDialog()
-            self?.visNovNode.isHidden = true
-//            #if os(iOS)
-            self?.virtualController?.connect()
-//            #endif
+            guard let self = self else { return }
+            
+            self.visNovNode.clearDialog()
+            self.visNovNode.isHidden = true
+            
+            // 1. Disconnect and release the old controller
+            self.virtualController?.disconnect()
+            self.virtualController = nil
+            
+            // 2. Small delay to ensure cleanup
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // 3. Recreate and reconnect fresh controller
+                self.setupVirtualController()
+            }
         }
     }
     
