@@ -19,7 +19,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             DialogState(scene: self)
         ]
         stateMachine = GKStateMachine(states: states)
-        stateMachine.enter(PlayingState.self) // Start in playing mode
+        stateMachine.enter(PlayingState.self)
     }
     
     var entities = [GKEntity]()

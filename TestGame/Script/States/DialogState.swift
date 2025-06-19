@@ -9,12 +9,11 @@ import GameplayKit
 class DialogState: GameState {
     override func didEnter(from previousState: GKState?) {
         scene.visNovNode.isHidden = false
-        scene.virtualController = nil // Disable input
+        scene.virtualController = nil
         setupDialogSystem()
     }
     
     private func setupDialogSystem() {
-            // Only setup if not already
             guard scene.dialogSystem.onDialogLineDisplayed == nil else { return }
 
             scene.dialogSystem.setPlayerPortraits(playerPortrait)
@@ -38,6 +37,6 @@ class DialogState: GameState {
         }
     
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return stateClass == PlayingState.self // Only allow transition back to PlayingState
+        return stateClass == PlayingState.self
     }
 }
