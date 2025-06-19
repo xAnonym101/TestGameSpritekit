@@ -186,7 +186,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
         
-        self.camera = cameraNode // Assign camera to scene
+        self.camera = cameraNode
     }
     
     func setupNpc() {
