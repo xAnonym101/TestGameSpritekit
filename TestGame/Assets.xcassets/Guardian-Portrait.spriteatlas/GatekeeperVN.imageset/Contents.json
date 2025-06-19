@@ -1,8 +1,7 @@
 {
   "images" : [
     {
-<<<<<<< Updated upstream:TestGame/Assets.xcassets/Player-Idle.spriteatlas/adventurer-idle-02.imageset/Contents.json
-      "filename" : "adventurer-idle-02.png",
+      "filename" : "GatekeeperVN trim.PNG",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -13,10 +12,6 @@
     {
       "idiom" : "universal",
       "scale" : "3x"
-=======
-      "filename" : "TreeBack2.PNG",
-      "idiom" : "universal"
->>>>>>> Stashed changes:TestGame/Assets.xcassets/Background.spriteatlas/TreeBack.imageset/Contents.json
     }
   ],
   "info" : {
