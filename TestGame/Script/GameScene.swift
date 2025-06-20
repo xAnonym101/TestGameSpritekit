@@ -12,11 +12,13 @@ import GameController
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var stateMachine: GKStateMachine!
-
+    
     private func setupStateMachine() {
         let states: [GKState] = [
             PlayingState(scene: self),
-            DialogState(scene: self)
+            DialogState(scene: self),
+            PauseState(scene: self),
+            QuestListState(scene: self)
         ]
         stateMachine = GKStateMachine(states: states)
         stateMachine.enter(PlayingState.self)
@@ -26,7 +28,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var graphs = [String : GKGraph]()
     
     var playerEntity: PlayerEntity!
-
+    
     var lastUpdateTime : TimeInterval = 0
     var label : SKLabelNode?
     var ground: SKSpriteNode?
@@ -41,14 +43,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var audioFootstep: SKAction!
     var joystickDirection = CGVector.zero
     
+    var pauseButton: SKSpriteNode!
+    
     var backgroundBg: ParrallaxBackground!
     var farthestBg: ParrallaxBackground!
     var farBg: ParrallaxBackground!
     var midBg: ParrallaxBackground!
     var nearestBg: ParrallaxBackground!
     var effectBg: ParrallaxBackground!
-    
-    
     
     override func sceneDidLoad() {
         
@@ -69,7 +71,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.midBg = ParrallaxBackground(imageName: "TreeFront", imageScaler: 0.5, zPos: -2, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
         self.nearestBg = ParrallaxBackground(imageName: "TreeVeryFront", imageScaler: 0.5, zPos: -1, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
     }
-        
+    
     override func didMove(to view: SKView) {
         visNovNode.position = CGPoint(
             x: frame.midX,
@@ -88,7 +90,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             print("Player contacted: \(npcName!)")
         }
     }
-
+    
     func didEnd(_ contact: SKPhysicsContact) {
         let names = [contact.bodyA.node?.name, contact.bodyB.node?.name]
         if let npcName = names.compactMap({ $0 }).first(where: { $0 == contactedNpcId }) {
@@ -98,20 +100,49 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        
+        if let node = self.atPoint(location) as? SKLabelNode, node.name == "questCloseLabel" {
+            print("Quest List Closed")
+            stateMachine.enter(PauseState.self)
+            return
+        }
+        
+        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseQuestIcon" {
+            print("Quest List Opened")
+            stateMachine.enter(QuestListState.self)
+            return
+        }
+
+        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseButton" {
+            print("Pause button tapped")
+            stateMachine.enter(PauseState.self)
+            return
+        }
+        
+        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "closeButton" {
+            print("Close button tapped")
+            stateMachine.enter(PlayingState.self)
+            return
+        }
+        
         if visNovNode.isHidden == false {
             dialogSystem.showNextDialogLine()
             return
+            
         }
     }
-
+    
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 {
             lastUpdateTime = currentTime
         }
-
+        
         let deltaTime = currentTime - lastUpdateTime
         lastUpdateTime = currentTime
-
+        
         stateMachine.update(deltaTime: deltaTime)
     }
     
@@ -137,7 +168,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             print("Spawn point not set.")
             return
         }
-
+        
         let textureAtlas = SKTextureAtlas(named: "MC-Idle")
         let idleFrames = (1...3).map { textureAtlas.textureNamed("MCidle\($0)") }
         let idleTexture = idleFrames[0]
@@ -147,13 +178,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         runFrames2 = (3...4).map { textureAtlas2.textureNamed("MCRun\($0)") }
         audioFootstep = SKAction.playSoundFileNamed("Player_Walk.wav", waitForCompletion: false)
         let size = CGSize(width: idleTexture.size().width * 3, height: idleTexture.size().height * 3)
-
+        
         playerEntity = PlayerEntity(texture: idleTexture, size: size)
         
         idleFrames.forEach { $0.filteringMode = .nearest }
         runFrames1.forEach { $0.filteringMode = .nearest }
         runFrames2.forEach { $0.filteringMode = .nearest }
-
+        
         if let renderNode = playerEntity.component(ofType: RenderComponent.self)?.node {
             renderNode.position = spawn
             renderNode.setScale(0.15)
@@ -168,16 +199,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if let movement = playerEntity.component(ofType: MovementComponent.self),
            let renderNode = playerEntity.component(ofType: RenderComponent.self)?.node as? SKSpriteNode {
-
+            
             movement.spriteNode = renderNode
             movement.idleFrames = idleFrames
             movement.runFrames1 = runFrames1
             movement.runFrames2 = runFrames2
             movement.audioFootstep = audioFootstep
         }
-
-
+        
+        
         entities.append(playerEntity)
+        
+        if let questComponent = playerEntity.component(ofType: QuestComponent.self) {
+            for quest in allQuests {
+                questComponent.addQuest(quest)
+            }
+        }
     }
     
     func setupCameraPlayer() {
@@ -204,7 +241,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let idleFrames = (1...3).map {textureAtlas.textureNamed("Gatekeeperidle\($0)") }
             idleFrames.forEach { $0.filteringMode = .nearest }
             let idleAction = SKAction.repeatForever(
-                    SKAction.animate(with: idleFrames, timePerFrame: 0.3)
+                SKAction.animate(with: idleFrames, timePerFrame: 0.3)
             )
             npcNode.run(idleAction, withKey: "idle")
         }

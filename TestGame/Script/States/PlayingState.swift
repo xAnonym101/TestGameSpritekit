@@ -12,6 +12,7 @@ class PlayingState: GameState {
     private var timeElapsed: TimeInterval = 0
     
     override func didEnter(from previousState: GKState?) {
+        print("PlayingState")
         scene.visNovNode.isHidden = true
         setupController()
     }
@@ -54,6 +55,22 @@ class PlayingState: GameState {
                 movement.setDirection(joystickDirection)
             }
         }
+        
+        if let cameraNode = scene.camera {
+            let buttonName = "pauseButton"
+            if cameraNode.childNode(withName: buttonName) == nil {
+                let texture = SKTexture(imageNamed: "GearIcon")
+                texture.filteringMode = .nearest
+                let pauseButton = SKSpriteNode(texture: texture, size: CGSize(width: 80, height: 80))
+                pauseButton.name = buttonName
+                cameraNode.addChild(pauseButton)
+
+                pauseButton.position = CGPoint(
+                    x: UIScreen.main.bounds.width * -0.6 - 80,
+                    y: UIScreen.main.bounds.height * 0.4 + 80
+                )
+            }
+        }
 
         scene.playerEntity.update(deltaTime: seconds)
 
@@ -86,6 +103,6 @@ class PlayingState: GameState {
 
     
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
-        return stateClass == DialogState.self
+        return stateClass == DialogState.self || stateClass == PauseState.self
     }
 }
