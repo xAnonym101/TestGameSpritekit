@@ -29,3 +29,13 @@ class WispPointComponent: GKComponent {
         wispRed += 1
     }
 }
+
+extension WispPointComponent: DialogPlaceholderProvider {
+    func providePlaceholders() -> [String: String] {
+        return [
+            "{wispRed}": "\(wispRed)",
+            "{wispBlue}": "\(wispBlue)",
+            "{alignment}": "\(alignment)",
+        ]
+    }
+}

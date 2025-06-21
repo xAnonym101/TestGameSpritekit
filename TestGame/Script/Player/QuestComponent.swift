@@ -7,10 +7,14 @@
 
 import GameplayKit
 
+enum QuestState {
+    case notStarted, started, active, completed
+}
+
 struct Quest {
     let name: String
     let description: String
-    let requiredItem: String?
+    let requiredItem: [String: Int]?
     var isStarted: Bool
     var isActive: Bool
     var isCompleted: Bool
@@ -65,7 +69,7 @@ class QuestComponent: GKComponent {
             print("""
             ▶︎ Name: \(quest.name)
                Description: \(quest.description)
-               Required Item: \(quest.requiredItem ?? "None")
+               Required Item: \(quest.requiredItem ?? [:])
                Started: \(quest.isStarted), Active: \(quest.isActive), Completed: \(quest.isCompleted)
             """)
         }

@@ -22,6 +22,9 @@ class SKVisNovNode: SKNode {
     
     private var targetHeightPortrait : CGFloat = 500
     
+    let baseFontSize: CGFloat = 20
+    let minFontSize: CGFloat = 16
+    let reductionPerWord: CGFloat = 0.25
     
     override init() {
         super.init()
@@ -66,7 +69,8 @@ class SKVisNovNode: SKNode {
         textNameNode.fontSize = 24
         textNameNode.fontName = "AvenirNext-Bold"
         textNameNode.zPosition = 2
-        textNameNode.position = CGPoint(x: 0, y: backgroundTextNode.size.height / 2 - 30)
+        textNameNode.position = CGPoint(x: 0, y: backgroundTextNode.size.height / 2 - 40)
+        textNovNode.blendMode = .add
         backgroundTextNode.addChild(textNameNode)
         
         // Text label
@@ -95,9 +99,14 @@ class SKVisNovNode: SKNode {
         buttonStartY = sceneSize.height * 0.6
     }
     
-    func updateDialog(line: DialogLine, texture: SKTexture?) {
+    func updateDialog(line: DialogLine, texture: SKTexture?, npcBubbleTexture: String?, npcTextColor: SKColor?) {
         textNameNode.text = line.speaker
         textNovNode.text = line.text
+        
+        let wordCount = line.text.split(separator: " ").count
+        let scaledSize = max(minFontSize, baseFontSize - (CGFloat(wordCount) * reductionPerWord))
+        textNovNode.fontSize = scaledSize
+
 
         // Determine who is speaking and update alpha
         if let texture = texture {
@@ -105,16 +114,26 @@ class SKVisNovNode: SKNode {
             let targetWidth = targetHeightPortrait * aspectRatio
             let newSize = CGSize(width: targetWidth, height: targetHeightPortrait)
 
-            if line.speaker == "Player" {
+            if line.speaker == GameManager.shared.playerEntity?.component(ofType: PlayerInfoComponent.self)?.name {
                 playerSprite.texture = texture
                 playerSprite.size = newSize
                 playerSprite.alpha = 1.0
                 npcSprite.alpha = 0.4
+                
+                backgroundTextNode.texture = SKTexture(imageNamed: "bubble-player")
+                backgroundNode.texture?.filteringMode = .nearest
+                textNameNode.fontColor = .white
+                textNovNode.fontColor = .white
             } else {
                 npcSprite.texture = texture
                 npcSprite.size = newSize
                 npcSprite.alpha = 1.0
                 playerSprite.alpha = 0.4
+                
+                backgroundTextNode.texture = SKTexture(imageNamed: npcBubbleTexture ?? "bubble-npc")
+                backgroundNode.texture?.filteringMode = .nearest
+                textNameNode.fontColor = npcTextColor ?? .white
+                textNovNode.fontColor = npcTextColor ?? .white
             }
             
         } else {
