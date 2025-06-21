@@ -9,27 +9,41 @@ import SpriteKit
 import GameplayKit
 import GameController
 
-
 class GameScene: SKScene, SKPhysicsContactDelegate {
+    
+    var stateMachine: GKStateMachine!
+    
+    private func setupStateMachine() {
+        let states: [GKState] = [
+            PlayingState(scene: self),
+            DialogState(scene: self),
+            PauseState(scene: self),
+            QuestListState(scene: self)
+        ]
+        stateMachine = GKStateMachine(states: states)
+        stateMachine.enter(PlayingState.self)
+    }
     
     var entities = [GKEntity]()
     var graphs = [String : GKGraph]()
     
-    private var playerEntity: PlayerEntity!
+    var playerEntity: PlayerEntity!
     
-    private var lastUpdateTime : TimeInterval = 0
-    private var label : SKLabelNode?
-    private var ground: SKSpriteNode?
-    private var spawnPoint: CGPoint?
-    private var virtualController: GCVirtualController?
-    private var contactedNpcId: String?
-    private var dialogSystem = DialogSystem()
-    private var visNovNode = SKVisNovNode()
+    var lastUpdateTime : TimeInterval = 0
+    var label : SKLabelNode?
+    var ground: SKSpriteNode?
+    var spawnPoint: CGPoint?
+    var virtualController: GCVirtualController?
+    var contactedNpcId: String?
+    var dialogSystem = DialogSystem()
+    var visNovNode = SKVisNovNode()
     var runFrames1: [SKTexture] = []
     var runFrames2: [SKTexture] = []
     var idleFrames: [SKTexture] = []
     var audioFootstep: SKAction!
     var joystickDirection = CGVector.zero
+    
+    var pauseButton: SKSpriteNode!
     
     var backgroundBg: ParrallaxBackground!
     var farthestBg: ParrallaxBackground!
@@ -38,22 +52,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var nearestBg: ParrallaxBackground!
     var effectBg: ParrallaxBackground!
     
-    
-    
     override func sceneDidLoad() {
         
-        print("GameScene loaded")
-        
-        self.lastUpdateTime = 0
-        
-        physicsWorld.contactDelegate = self
+        super.sceneDidLoad()
+        setupStateMachine()
+        self.physicsWorld.contactDelegate = self
         
         setupSpawnPoint()
         setupGround()
         setupPlayer()
         setupCameraPlayer()
-        setupControllerHandlers()
         setupNpc()
+        
         self.backgroundBg = ParrallaxBackground(imageName: "Background", imageScaler: 0.5, zPos: -6, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
         self.farthestBg = ParrallaxBackground(imageName: "TreeVeryBack", imageScaler: 0.5, zPos: -5, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
         self.farBg = ParrallaxBackground(imageName: "TreeBack", imageScaler: 0.5, zPos: -4, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
@@ -61,7 +71,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.midBg = ParrallaxBackground(imageName: "TreeFront", imageScaler: 0.5, zPos: -2, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
         self.nearestBg = ParrallaxBackground(imageName: "TreeVeryFront", imageScaler: 0.5, zPos: -1, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
     }
-        
+    
     override func didMove(to view: SKView) {
         visNovNode.position = CGPoint(
             x: frame.midX,
@@ -71,7 +81,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.camera?.addChild(visNovNode)
         visNovNode.resizeBackgroundNode(to: self.view!)
         visNovNode.isHidden = true
-        setupDialogSystem()
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
@@ -81,7 +90,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             print("Player contacted: \(npcName!)")
         }
     }
-
+    
     func didEnd(_ contact: SKPhysicsContact) {
         let names = [contact.bodyA.node?.name, contact.bodyB.node?.name]
         if let npcName = names.compactMap({ $0 }).first(where: { $0 == contactedNpcId }) {
@@ -91,58 +100,50 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        
+        if let node = self.atPoint(location) as? SKLabelNode, node.name == "questCloseLabel" {
+            print("Quest List Closed")
+            stateMachine.enter(PauseState.self)
+            return
+        }
+        
+        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseQuestIcon" {
+            print("Quest List Opened")
+            stateMachine.enter(QuestListState.self)
+            return
+        }
+
+        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseButton" {
+            print("Pause button tapped")
+            stateMachine.enter(PauseState.self)
+            return
+        }
+        
+        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "closeButton" {
+            print("Close button tapped")
+            stateMachine.enter(PlayingState.self)
+            return
+        }
+        
         if visNovNode.isHidden == false {
             dialogSystem.showNextDialogLine()
             return
+            
         }
     }
     
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-    }
-    
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-    }
-
     override func update(_ currentTime: TimeInterval) {
-        if self.lastUpdateTime == 0 {
-            self.lastUpdateTime = currentTime
+        if lastUpdateTime == 0 {
+            lastUpdateTime = currentTime
         }
         
-        let dt = currentTime - self.lastUpdateTime
-        self.lastUpdateTime = currentTime
+        let deltaTime = currentTime - lastUpdateTime
+        lastUpdateTime = currentTime
         
-        if visNovNode.isHidden == false {
-                joystickDirection = .zero
-                if let movement = playerEntity.component(ofType: MovementComponent.self) {
-                    movement.setDirection(.zero)
-                }
-            } else {
-                if let movement = playerEntity.component(ofType: MovementComponent.self) {
-                    movement.setDirection(joystickDirection)
-                }
-            }
-        
-        playerEntity.update(deltaTime: dt)
-
-        guard let camera = self.camera,
-              let playerNode = playerEntity.component(ofType: RenderComponent.self)?.node else { return }
-
-        camera.position = CGPoint(x: playerNode.position.x, y: playerNode.position.y + 150)
-
-        // 👇 Parallax update
-        let dx = joystickDirection.dx
-        let px = playerNode.position.x
-
-        // Smaller speed = slower background = further away
-        backgroundBg.update(playerX: px, direction: dx, speed: 0.02)
-        farthestBg.update(playerX: px, direction: dx, speed: 0.04)
-        farBg.update(playerX: px, direction: dx, speed: 0.07)
-        effectBg.update(playerX: px, direction: dx, speed: 0.07)
-        midBg.update(playerX: px, direction: dx, speed: 0.1)
-        nearestBg.update(playerX: px, direction: dx, speed: 0.0)
+        stateMachine.update(deltaTime: deltaTime)
     }
     
     func setupGround() {
@@ -158,46 +159,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if let spawnNode = self.childNode(withName: "//spawnPoint") {
             spawnPoint = spawnNode.position
         } else {
-            print("⚠️ spawnPoint not found!")
-        }
-    }
-    
-    func setupControllerHandlers() {
-        setupVirtualController()
-    }
-    
-    func setupVirtualController() {
-        // Guard against duplicate setup
-        if virtualController != nil { return }
-        
-        let virtualConfiguration = GCVirtualController.Configuration()
-        virtualConfiguration.elements = [GCInputLeftThumbstick, GCInputButtonA, GCInputButtonB]
-        
-        virtualController = GCVirtualController(configuration: virtualConfiguration)
-        virtualController?.connect()
-        
-        if let gamepad = virtualController?.controller?.extendedGamepad {
-            gamepad.leftThumbstick.valueChangedHandler = { [weak self] _, x, y in
-                self?.joystickDirection = CGVector(dx: CGFloat(x), dy: 0)
-            }
-            
-            gamepad.buttonA.pressedChangedHandler = { [weak self] _, _, pressed in
-                guard pressed else { return } // Only trigger on press (not release)
-                if self?.visNovNode.isHidden == true {
-                    self?.tryStartNpcDialog()
-                } else {
-                    self?.dialogSystem.showNextDialogLine()
-                }
-            }
+            print("[spawnPoint] not found!")
         }
     }
     
     func setupPlayer() {
         guard let spawn = spawnPoint else {
-            print("⚠️ Spawn point not set.")
+            print("Spawn point not set.")
             return
         }
-
+        
         let textureAtlas = SKTextureAtlas(named: "MC-Idle")
         let idleFrames = (1...3).map { textureAtlas.textureNamed("MCidle\($0)") }
         let idleTexture = idleFrames[0]
@@ -207,13 +178,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         runFrames2 = (3...4).map { textureAtlas2.textureNamed("MCRun\($0)") }
         audioFootstep = SKAction.playSoundFileNamed("Player_Walk.wav", waitForCompletion: false)
         let size = CGSize(width: idleTexture.size().width * 3, height: idleTexture.size().height * 3)
-
+        
         playerEntity = PlayerEntity(texture: idleTexture, size: size)
         
         idleFrames.forEach { $0.filteringMode = .nearest }
         runFrames1.forEach { $0.filteringMode = .nearest }
         runFrames2.forEach { $0.filteringMode = .nearest }
-
+        
         if let renderNode = playerEntity.component(ofType: RenderComponent.self)?.node {
             renderNode.position = spawn
             renderNode.setScale(0.15)
@@ -228,30 +199,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if let movement = playerEntity.component(ofType: MovementComponent.self),
            let renderNode = playerEntity.component(ofType: RenderComponent.self)?.node as? SKSpriteNode {
-
+            
             movement.spriteNode = renderNode
             movement.idleFrames = idleFrames
             movement.runFrames1 = runFrames1
             movement.runFrames2 = runFrames2
             movement.audioFootstep = audioFootstep
         }
-
-
+        
+        
         entities.append(playerEntity)
+        
+        if let questComponent = playerEntity.component(ofType: QuestComponent.self) {
+            for quest in allQuests {
+                questComponent.addQuest(quest)
+            }
+        }
     }
     
     func setupCameraPlayer() {
         guard let cameraNode = self.childNode(withName: "//SKCameraNode") as? SKCameraNode else {
-            print("⚠️ Camera node not found")
+            print("Camera node not found")
             return
         }
         
-        self.camera = cameraNode // Assign camera to scene
+        self.camera = cameraNode
     }
     
     func setupNpc() {
         if let npcNode = self.childNode(withName: "//npc_guardian") as? SKSpriteNode {
-            npcNode.zPosition = 0
+            npcNode.zPosition = -1
             npcNode.physicsBody = SKPhysicsBody(rectangleOf: npcNode.size)
             npcNode.physicsBody?.categoryBitMask = PhysicsCategory.npc
             npcNode.physicsBody?.contactTestBitMask = PhysicsCategory.player
@@ -264,50 +241,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let idleFrames = (1...3).map {textureAtlas.textureNamed("Gatekeeperidle\($0)") }
             idleFrames.forEach { $0.filteringMode = .nearest }
             let idleAction = SKAction.repeatForever(
-                    SKAction.animate(with: idleFrames, timePerFrame: 0.3)
+                SKAction.animate(with: idleFrames, timePerFrame: 0.3)
             )
             npcNode.run(idleAction, withKey: "idle")
         }
-    }
-    
-    func setupDialogSystem() {
-        dialogSystem.setPlayerPortraits(playerPortrait)
-        dialogSystem.registerDialogTree(npcGuardian)
-
-        dialogSystem.onDialogLineDisplayed = { [weak self] line, portrait in
-            let texture = portrait != nil ? SKTexture(imageNamed: portrait!) : nil
-            self?.visNovNode.updateDialog(line: line, texture: texture)
-        }
-
-        dialogSystem.onChoicesPresented = { [weak self] choices in
-            self?.visNovNode.showChoices(choices: choices) { index in
-                self?.dialogSystem.selectChoice(choices[index])
-            }
-        }
-
-        dialogSystem.onDialogEnded = { [weak self] in
-            guard let self = self else { return }
-            
-            self.visNovNode.clearDialog()
-            self.visNovNode.isHidden = true
-            
-            // 1. Disconnect and release the old controller
-            self.virtualController?.disconnect()
-            self.virtualController = nil
-            
-            // 2. Small delay to ensure cleanup
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                // 3. Recreate and reconnect fresh controller
-                self.setupVirtualController()
-            }
-        }
-    }
-    
-    func tryStartNpcDialog() {
-        guard let npcId = contactedNpcId else { return }
-        print("Starting dialog with: \(npcId)")
-        dialogSystem.startDialog(npcId: npcId, state: "quest_01")
-        visNovNode.isHidden = false
-        virtualController?.disconnect()
     }
 }

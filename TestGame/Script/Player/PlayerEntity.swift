@@ -14,6 +14,7 @@ class PlayerEntity: GKEntity {
         addComponent(MovementComponent())
         addComponent(WispPointComponent())
         addComponent(InventoryComponent())
+        addComponent(QuestComponent())
         addComponent(RenderComponent(texture: texture, size: size))
     }
     
