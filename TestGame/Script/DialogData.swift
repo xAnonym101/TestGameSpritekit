@@ -80,14 +80,14 @@ let npcGuardian = NpcDialogTree(
                              ],
                              followUpChoices: [
                                 DialogChoice(text: "Of course, I can help you!",
-                                             action: nil,
+                                             action: "Find the Guardian's Daughter",
                                              followUpDialog: [
                                                 DialogLine(text: "Of course, I can help you!", speaker: "Player", expression: "neutral"),
                                                 DialogLine(text: "Do you know which way the kids come back from forest?", speaker: "Player", expression: "neutral"),
                                                 DialogLine(text: "Ah, yes, it's north from here.", speaker: "Guardian", expression: "neutral"),
                                                 DialogLine(text: "You will see a path with big trees on the left side.", speaker: "Guardian", expression: "neutral"),
                                                 DialogLine(text: "I see. Thank you for the information.", speaker: "Player", expression: "neutral"),
-                                                DialogLine(text: "I will help as soon as I can.", speaker: "Player", expression: "neutral"),
+                                                DialogLine(text: "I will be back as soon as possible.", speaker: "Player", expression: "neutral"),
                                              ],
                                              followUpChoices: nil),
                                 DialogChoice(text: "I'm sorry, I can't help you.",
