@@ -98,10 +98,28 @@ class PlayingState: GameState {
             print("No NPC contact detected.")
             return
         }
+        
+        guard let npcTree = scene.dialogSystem.getDialogTree(for: npcId) else {
+            print("NPC dialog tree not found for: \(npcId)")
+            return
+        }
 
-        print("Starting dialog with NPC: \(npcId)")
+        guard let progress = GameManager.shared.playerEntity?.component(ofType: DialogProgressComponent.self) else {
+            print("DialogProgressComponent not found.")
+            return
+        }
+        
+        let allStates = npcTree.dialogs.keys
+                .filter { $0 != "default" }
+                .sorted()
+        
+        let uncompletedState = allStates.first { !progress.hasCompletedDialog("\($0)") }
+        
+        let selectedState = uncompletedState ?? "default"
+        
+        print("Starting dialog with NPC: \(npcId), state: \(selectedState)")
         stateMachine?.enter(DialogState.self)
-        scene.dialogSystem.startDialog(npcId: npcId, state: "quest_01")
+        scene.dialogSystem.startDialog(npcId: npcId, state: selectedState)
     }
     
     func tryCollectNearbyHerb() {

@@ -14,11 +14,7 @@ class DialogState: GameState {
     }
     
     private func setupDialogSystem() {
-        scene.dialogSystem.scene = scene
         guard scene.dialogSystem.onDialogLineDisplayed == nil else { return }
-
-        scene.dialogSystem.setPlayerPortraits(playerPortrait)
-        scene.dialogSystem.registerDialogTree(npcGuardian)
 
         scene.dialogSystem.onDialogLineDisplayed = { [weak self] line, portrait, bubbleDialog, textColor in
             let texture = portrait != nil ? SKTexture(imageNamed: portrait!) : nil
@@ -36,7 +32,7 @@ class DialogState: GameState {
             if let questComponent = self?.scene.playerEntity.component(ofType: QuestComponent.self) {
                 questComponent.debugPrintAllQuests()
             }
-            self?.scene.dialogSystem.onDialogEnded = nil
+            self?.scene.visNovNode.clearDialog()
         }
     }
     
