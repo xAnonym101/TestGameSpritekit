@@ -20,9 +20,9 @@ class DialogState: GameState {
         scene.dialogSystem.setPlayerPortraits(playerPortrait)
         scene.dialogSystem.registerDialogTree(npcGuardian)
 
-        scene.dialogSystem.onDialogLineDisplayed = { [weak self] line, portrait in
+        scene.dialogSystem.onDialogLineDisplayed = { [weak self] line, portrait, bubbleDialog, textColor in
             let texture = portrait != nil ? SKTexture(imageNamed: portrait!) : nil
-            self?.scene.visNovNode.updateDialog(line: line, texture: texture)
+            self?.scene.visNovNode.updateDialog(line: line, texture: texture, npcBubbleTexture: bubbleDialog, npcTextColor: textColor)
         }
 
         scene.dialogSystem.onChoicesPresented = { [weak self] choices in

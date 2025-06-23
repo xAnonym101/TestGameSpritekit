@@ -5,6 +5,8 @@
 //  Created by Syamsuddin Putra Riefli on 10/06/25.
 //
 
+import SpriteKit
+
 struct DialogLine {
     let text: String
     let speaker: String
@@ -21,6 +23,8 @@ struct DialogChoice {
 struct NpcData {
     let name: String
     let portraits: [String: String] // expression: image name
+    let bubbleTextureName: String?
+    let textColor: SKColor?
     let dialogSequence: [DialogLine]
     let choices: [DialogChoice]?
 }
@@ -40,8 +44,9 @@ class DialogSystem {
     private var currentChoices: [DialogChoice]? = nil
     private var currentNpc: NpcData?
     private var playerPortraits: [String: String] = [:]
+    var resolver: PlaceholderResolver?
 
-    var onDialogLineDisplayed: ((DialogLine, String?) -> Void)?
+    var onDialogLineDisplayed: ((DialogLine, String?, String?, SKColor?) -> Void)?
     var onDialogEnded: (() -> Void)?
     var onChoicesPresented: (([DialogChoice]) -> Void)?
 
@@ -59,6 +64,8 @@ class DialogSystem {
             print("Dialog not found for NPC: \(npcId), state: \(state)")
             return
         }
+        
+        self.resolver = PlaceholderResolver(from: GameManager.shared.playerEntity!)
         currentNpc = npc
         currentDialogSequence = npc.dialogSequence
         currentDialogIndex = 0
@@ -71,10 +78,15 @@ class DialogSystem {
 
         if currentDialogIndex < currentDialogSequence.count {
             let line = currentDialogSequence[currentDialogIndex]
+            let resolvedLine = DialogLine(
+                text: resolver?.resolve(text: line.text) ?? line.text,
+                speaker: resolver?.resolve(text: line.speaker) ?? line.speaker,
+                expression: line.expression
+            )
             let portraitImageName = (line.speaker == npc.name
                                       ? npc.portraits[line.expression]
                                       : playerPortraits[line.expression])
-            onDialogLineDisplayed?(line, portraitImageName)
+            onDialogLineDisplayed?(resolvedLine, portraitImageName, npc.bubbleTextureName, npc.textColor)
             currentDialogIndex += 1
         } else {
             print("Reached end of dialog lines.")

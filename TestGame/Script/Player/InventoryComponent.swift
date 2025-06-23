@@ -32,3 +32,18 @@ class InventoryComponent: GKComponent {
         return itemCount(item) > 0
     }
 }
+
+extension InventoryComponent: DialogPlaceholderProvider {
+    func providePlaceholders() -> [String: String] {
+        var placeholders: [String: String] = [:]
+
+        for (item, count) in items {
+            let key = item
+                .lowercased()
+                .replacingOccurrences(of: " ", with: "_")  // "Library 2 Key" → "library_2_key"
+            placeholders["{\(key)}"] = "\(count)"
+        }
+        
+        return placeholders
+    }
+}

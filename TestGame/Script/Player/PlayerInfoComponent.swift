@@ -29,3 +29,11 @@ class PlayerInfoComponent: GKComponent {
         fatalError("init(coder:) has not been implemented")
     }
 }
+
+extension PlayerInfoComponent: DialogPlaceholderProvider {
+    func providePlaceholders() -> [String: String] {
+        return [
+            "{playerName}": name
+        ]
+    }
+}

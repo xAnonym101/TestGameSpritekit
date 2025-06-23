@@ -15,7 +15,9 @@ let allQuests: [Quest] = [
 let guardianQuest = Quest(
     name: "Find the Guardian's Daughter",
     description: "Help the guardian find his missing daughter in the forest.",
-    requiredItem: "Forest Map",
+    requiredItem: [
+        "Forest Map": 1
+    ],
     isStarted: false,
     isActive: false,
     isCompleted: false
@@ -24,7 +26,7 @@ let guardianQuest = Quest(
 let dummy1 = Quest(
     name: "Dummy-1",
     description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo, voluptatem!",
-    requiredItem: "",
+    requiredItem: [:],
     isStarted: false,
     isActive: false,
     isCompleted: false
@@ -33,7 +35,7 @@ let dummy1 = Quest(
 let dummy2 = Quest(
     name: "Dummy-2",
     description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo, voluptatem!",
-    requiredItem: "",
+    requiredItem: [:],
     isStarted: false,
     isActive: false,
     isCompleted: false
@@ -42,7 +44,7 @@ let dummy2 = Quest(
 let dummy3 = Quest(
     name: "Dummy-3",
     description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo, voluptatem!",
-    requiredItem: "",
+    requiredItem: [:],
     isStarted: false,
     isActive: false,
     isCompleted: false
