@@ -77,6 +77,8 @@ class DialogSystem {
             onDialogLineDisplayed?(line, portraitImageName)
             currentDialogIndex += 1
         } else {
+            print("Reached end of dialog lines.")
+            print("Choices count: \(currentChoices?.count ?? -1)")
             if let choices = currentChoices, !choices.isEmpty {
                 onChoicesPresented?(choices)
             } else {
@@ -111,6 +113,7 @@ class DialogSystem {
     }
 
     func endDialog() {
+        print("dialog ended")
         onDialogEnded?()
         currentDialogSequence = []
         currentDialogIndex = 0

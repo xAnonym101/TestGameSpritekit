@@ -18,7 +18,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             PlayingState(scene: self),
             DialogState(scene: self),
             PauseState(scene: self),
-            QuestListState(scene: self)
+//            QuestListState(scene: self)
         ]
         stateMachine = GKStateMachine(states: states)
         stateMachine.enter(PlayingState.self)
@@ -110,11 +110,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
         
-        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseQuestIcon" {
-            print("Quest List Opened")
-            stateMachine.enter(QuestListState.self)
-            return
-        }
+//        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseQuestIcon" {
+//            print("Quest List Opened")
+//            stateMachine.enter(QuestListState.self)
+//            return
+//        }
 
         if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseButton" {
             print("Pause button tapped")
