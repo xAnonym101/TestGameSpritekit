@@ -29,9 +29,22 @@
 		C1E1A2942DEFD69400054F6F /* TestGameUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TestGameUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		96B505542E09560F001D3EC1 /* Exceptions for "TestGame" folder in "TestGame" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C1E1A2702DEFD69300054F6F /* TestGame */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C1E1A2732DEFD69300054F6F /* TestGame */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				96B505542E09560F001D3EC1 /* Exceptions for "TestGame" folder in "TestGame" target */,
+			);
 			path = TestGame;
 			sourceTree = "<group>";
 		};
@@ -397,6 +410,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 336MS8FPXZ;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TestGame/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Re:Self";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -427,6 +441,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 336MS8FPXZ;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TestGame/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Re:Self";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
