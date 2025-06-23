@@ -15,7 +15,8 @@ struct DialogLine {
 
 struct DialogChoice {
     let text: String
-    let action: String?
+    let action: (() -> Void)?
+    let requiredItems: [String: Int]?
     let followUpDialog: [DialogLine]?
     let followUpChoices: [DialogChoice]?
 }
@@ -35,8 +36,6 @@ struct NpcDialogTree {
 }
 
 class DialogSystem {
-    
-    weak var scene: GameScene?
     
     private var npcDialogDatabase: [String: NpcDialogTree] = [:]
     private var currentDialogSequence: [DialogLine] = []
@@ -98,9 +97,7 @@ class DialogSystem {
     }
 
     func selectChoice(_ choice: DialogChoice) {
-        if let action = choice.action {
-            runAction(for: action)
-        }
+        choice.action?()
         if let followUp = choice.followUpDialog {
             currentDialogSequence = followUp
             currentDialogIndex = 0
@@ -110,17 +107,6 @@ class DialogSystem {
             endDialog()
         }
     }
-    
-    func runAction(for id: String) {
-        switch id {
-        case "Find the Guardian's Daughter":
-            scene?.playerEntity.component(ofType: QuestComponent.self)?.startQuest(named: "Find the Guardian's Daughter")
-        case "Guardian's Quest Completed":
-            scene?.playerEntity.component(ofType: QuestComponent.self)?.completeQuest(named: "Find the Guardian's Daughter")
-        default:
-            break
-        }
-    }
 
     func endDialog() {
         onDialogEnded?()
@@ -128,5 +114,14 @@ class DialogSystem {
         currentDialogIndex = 0
         currentChoices = nil
         currentNpc = nil
+        resolver = nil
+
+        onDialogLineDisplayed = nil
+        onDialogEnded = nil
+        onChoicesPresented = nil
+    }
+    
+    func getDialogTree(for npcId: String) -> NpcDialogTree? {
+        return npcDialogDatabase[npcId]
     }
 }

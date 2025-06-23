@@ -64,6 +64,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupCameraPlayer()
         setupNpc()
         setupParallax()
+        
+        dialogSystem.setPlayerPortraits(playerPortrait)
+        dialogSystem.registerDialogTree(npcGuardian)
     }
     
     override func didMove(to view: SKView) {
@@ -244,11 +247,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupParallax() {
-        self.backgroundBg = ParrallaxBackground(imageName: "Background", imageScaler: 0.5, zPos: -6, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
-        self.farthestBg = ParrallaxBackground(imageName: "TreeVeryBack", imageScaler: 0.5, zPos: -5, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
-        self.farBg = ParrallaxBackground(imageName: "TreeBack", imageScaler: 0.5, zPos: -4, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
-        self.effectBg = ParrallaxBackground(imageName: "LightEffect", imageScaler: 0.5, zPos: -3, xPos: 80.893, yPos: -330.587, scene: self, minTiles: 4, maxTiles: 6, blendMode: .add, randomZMin: -5, randomZMax: -1)
-        self.midBg = ParrallaxBackground(imageName: "TreeFront", imageScaler: 0.5, zPos: -2, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
-        self.nearestBg = ParrallaxBackground(imageName: "TreeVeryFront", imageScaler: 0.5, zPos: -1, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.backgroundBg = ParrallaxBackground(imageName: "Background", imageScaler: 0.5, zPos: -11, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.farthestBg = ParrallaxBackground(imageName: "TreeVeryBack", imageScaler: 0.5, zPos: -10, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.farBg = ParrallaxBackground(imageName: "TreeBack", imageScaler: 0.5, zPos: -9, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.effectBg = ParrallaxBackground(imageName: "LightEffect", imageScaler: 0.5, zPos: -8, xPos: 80.893, yPos: -330.587, scene: self, minTiles: 4, maxTiles: 6, blendMode: .add, randomZMin: -11, randomZMax: -6)
+        self.midBg = ParrallaxBackground(imageName: "TreeFront", imageScaler: 0.5, zPos: -7, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
+        self.nearestBg = ParrallaxBackground(imageName: "TreeVeryFront", imageScaler: 0.5, zPos: -6, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
     }
 }

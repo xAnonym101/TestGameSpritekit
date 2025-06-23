@@ -31,6 +31,28 @@ class InventoryComponent: GKComponent {
     func hasItem(_ item: String, count: Int = 1) -> Bool {
         return itemCount(item) > 0
     }
+    
+    func hasItems(_ requiredItems: [String: Int]) -> Bool {
+        for (item, count) in requiredItems {
+            if itemCount(item) < count {
+                return false
+            }
+        }
+        return true
+    }
+
+    func missingItems(from requiredItems: [String: Int]) -> [String: Int] {
+        var missing: [String: Int] = [:]
+
+        for (item, count) in requiredItems {
+            let owned = itemCount(item)
+            if owned < count {
+                missing[item] = count - owned
+            }
+        }
+
+        return missing
+    }
 }
 
 extension InventoryComponent: DialogPlaceholderProvider {

@@ -32,6 +32,7 @@ let npcGuardian = NpcDialogTree(
             choices: [
                 DialogChoice(text: "I want to buy some weapons.",
                              action: nil,
+                             requiredItems: [:],
                              followUpDialog: [
                                 DialogLine(text: "I want to buy some weapons.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "I'm sorry, I don't have any weapons for sale right now.", speaker: "Guardian", expression: "sad"),
@@ -40,6 +41,7 @@ let npcGuardian = NpcDialogTree(
                              followUpChoices: nil),
                 DialogChoice(text: "I want to upgrade my current weapon.",
                              action: nil,
+                             requiredItems: [:],
                              followUpDialog: [
                                 DialogLine(text: "I want to upgrade my current weapon.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "I'm sorry, I don't have any materials to upgrade your weapon right now.", speaker: "Guardian", expression: "sad"),
@@ -48,6 +50,7 @@ let npcGuardian = NpcDialogTree(
                              followUpChoices: nil),
                 DialogChoice(text: "Later.",
                              action: nil,
+                             requiredItems: [:],
                              followUpDialog: [
                                 DialogLine(text: "Later.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "Come back if you need help.", speaker: "Guardian", expression: "neutral")
@@ -55,7 +58,7 @@ let npcGuardian = NpcDialogTree(
                              followUpChoices: nil)
             ]
         ),
-        "quest_01" : NpcData(
+        "npc_guardian_quest_01" : NpcData(
             name: "Guardian",
             portraits: [
                 "neutral" : "GatekeeperVN",
@@ -72,11 +75,12 @@ let npcGuardian = NpcDialogTree(
             choices: [
                 DialogChoice(text: "Actually, I heard that you need some help with something.",
                              action: nil,
+                             requiredItems: [:],
                              followUpDialog: [
                                 DialogLine(text: "Actually, I heard that you need some help with something.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "Can you tell me more about it?", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "Ah, about that, huh?", speaker: "Guardian", expression: "neutral"),
-                                DialogLine(text: "About 2 days ago, my daughter was playing with her friends.", speaker: "Guardian", expression: "neutral"),
+                                DialogLine(text: "About 2 days ago, .", speaker: "Guardian", expression: "neutral"),
                                 DialogLine(text: "But, at noon, only her friends come back to the village.", speaker: "Guardian", expression: "neutral"),
                                 DialogLine(text: "They say that my daughter help them to distract some monster in forest.", speaker: "Guardian", expression: "sad"),
                                 DialogLine(text: "I know that she has her mother trait's, but i can't help but worry about her because she didn't go back to home.", speaker: "Guardian", expression: "sad"),
@@ -84,7 +88,14 @@ let npcGuardian = NpcDialogTree(
                              ],
                              followUpChoices: [
                                 DialogChoice(text: "Of course, I can help you!",
-                                             action: nil,
+                                             action: {
+                                                 GameManager.shared.playerEntity?.component(ofType: DialogProgressComponent.self)?.markDialogCompleted("npc_guardian_quest_01")
+//                                                 GameManager.shared.playerEntity?.component(ofType: QuestComponent.self)?.addQuest(<#T##quest: Quest##Quest#>)
+                                                 
+                                             },
+                                             requiredItems: [
+                                                :
+                                             ],
                                              followUpDialog: [
                                                 DialogLine(text: "Of course, I can help you!", speaker: "{playerName}", expression: "neutral"),
                                                 DialogLine(text: "Do you know which way the kids come back from forest?", speaker: "{playerName}", expression: "neutral"),
@@ -96,6 +107,7 @@ let npcGuardian = NpcDialogTree(
                                              followUpChoices: nil),
                                 DialogChoice(text: "I'm sorry, I can't help you.",
                                              action: nil,
+                                             requiredItems: [:],
                                              followUpDialog: [
                                                 DialogLine(text: "I'm sorry, I can't help you.", speaker: "{playerName}", expression: "neutral"),
                                                 DialogLine(text: "I understand.", speaker: "Guardian", expression: "neutral")
@@ -106,6 +118,7 @@ let npcGuardian = NpcDialogTree(
                             ),
                 DialogChoice(text: "Later.",
                              action: nil,
+                             requiredItems: [:],
                              followUpDialog: [
                                 DialogLine(text: "Later.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "Come back if you need help.", speaker: "Guardian", expression: "happy")

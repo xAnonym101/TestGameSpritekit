@@ -13,11 +13,9 @@ let allQuests: [Quest] = [
 ]
 
 let guardianQuest = Quest(
-    name: "Find the Guardian's Daughter",
-    description: "Help the guardian find his missing daughter in the forest.",
-    requiredItem: [
-        "Forest Map": 1
-    ],
+    name: "Find the Lumberjac",
+    description: "Help the guardian to find the lumberjack",
+    requiredItem: [:],
     isStarted: false,
     isActive: false,
     isCompleted: false

@@ -159,6 +159,7 @@ class SKVisNovNode: SKNode {
         let buttonHeight: CGFloat = 50
         let spacing: CGFloat = 20
 //        let startY = scene?.frame.maxY ?? 0 + 100
+        
 
         for (index, choice) in choices.enumerated() {
             let button = SKButtonNode(
@@ -175,6 +176,18 @@ class SKVisNovNode: SKNode {
                 onSelected(index)
                 self.hideChoices()
             }
+            
+            let hasItem: Bool = {
+                if let required = choice.requiredItems, !required.isEmpty {
+                    return GameManager.shared.playerEntity?
+                        .component(ofType: InventoryComponent.self)?
+                        .hasItems(required) ?? false
+                } else {
+                    return true
+                }
+            }()
+            
+            button.isEnabled = hasItem
 
             button.name = "choice_\(index)"
             button.position = CGPoint(
