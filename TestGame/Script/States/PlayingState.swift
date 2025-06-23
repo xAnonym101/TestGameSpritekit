@@ -21,7 +21,7 @@ class PlayingState: GameState {
         if scene.virtualController != nil { return }
 
         let config = GCVirtualController.Configuration()
-        config.elements = [GCInputLeftThumbstick, GCInputButtonA, GCInputButtonB]
+        config.elements = [GCInputLeftThumbstick, GCInputButtonA]
 
         let controller = GCVirtualController(configuration: config)
         scene.virtualController = controller
@@ -63,11 +63,12 @@ class PlayingState: GameState {
                 texture.filteringMode = .nearest
                 let pauseButton = SKSpriteNode(texture: texture, size: CGSize(width: 80, height: 80))
                 pauseButton.name = buttonName
+                pauseButton.zPosition = 100
                 cameraNode.addChild(pauseButton)
 
                 pauseButton.position = CGPoint(
                     x: UIScreen.main.bounds.width * -0.6 - 80,
-                    y: UIScreen.main.bounds.height * 0.4 + 80
+                    y: UIScreen.main.bounds.height * 0.4 + 80,
                 )
             }
         }
@@ -88,6 +89,8 @@ class PlayingState: GameState {
         scene.effectBg.update(playerX: px, direction: dx, speed: 0.07)
         scene.midBg.update(playerX: px, direction: dx, speed: 0.1)
         scene.nearestBg.update(playerX: px, direction: dx, speed: 0.0)
+        
+        tryCollectNearbyHerb()
     }
     
     func tryStartNpcDialog() {
@@ -99,6 +102,25 @@ class PlayingState: GameState {
         print("Starting dialog with NPC: \(npcId)")
         stateMachine?.enter(DialogState.self)
         scene.dialogSystem.startDialog(npcId: npcId, state: "quest_01")
+    }
+    
+    func tryCollectNearbyHerb() {
+        guard let herb = scene.nearbyHerbNode,
+        let gamepad = scene.virtualController?.controller?.extendedGamepad,
+        gamepad.buttonA.isPressed else {
+            return
+        }
+
+        // Prevent collecting the same herb again
+        scene.nearbyHerbNode = nil
+
+        // Remove from scene
+        herb.removeFromParent()
+
+        // Add to inventory
+        GameManager.shared.playerEntity?.component(ofType: InventoryComponent.self)?.addItem("Herb", count: 1)
+
+        print("✅ Collected herb: \(herb.name ?? "?")")
     }
 
     

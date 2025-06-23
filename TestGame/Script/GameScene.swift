@@ -52,6 +52,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var nearestBg: ParrallaxBackground!
     var effectBg: ParrallaxBackground!
     
+    var hasSpawnedLumberjack = false
+    var hasSpawnedHerbs = false
+    var nearbyHerbNode: SKNode?
+    
     override func sceneDidLoad() {
         
         super.sceneDidLoad()
@@ -64,6 +68,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupCameraPlayer()
         setupNpc()
         setupParallax()
+        
+        dialogSystem.setPlayerPortraits(playerPortrait)
+        dialogSystem.registerDialogTree(npcGuardian)
+        dialogSystem.registerDialogTree(npcLumberjack)
     }
     
     override func didMove(to view: SKView) {
@@ -78,12 +86,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        let names = [contact.bodyA.node?.name, contact.bodyB.node?.name]
-        if let npcName = names.first(where: { $0?.starts(with: "npc_") == true }) {
-            contactedNpcId = npcName
-            print("Player contacted: \(npcName!)")
+        let bodyA = contact.bodyA
+        let bodyB = contact.bodyB
+        
+        // Sort out player and collectible contact
+        let playerBody: SKPhysicsBody?
+        let herbBody: SKPhysicsBody?
+
+        if bodyA.categoryBitMask == PhysicsCategory.player && bodyB.categoryBitMask == PhysicsCategory.collectible {
+            playerBody = bodyA
+            herbBody = bodyB
+        } else if bodyB.categoryBitMask == PhysicsCategory.player && bodyA.categoryBitMask == PhysicsCategory.collectible {
+            playerBody = bodyB
+            herbBody = bodyA
+        } else {
+            // Check for NPC contact (your existing behavior)
+            let names = [bodyA.node?.name, bodyB.node?.name]
+            if let npcName = names.first(where: { $0?.starts(with: "npc_") == true }) {
+                contactedNpcId = npcName
+                print("Player contacted: \(npcName!)")
+            }
+            return
+        }
+
+        // If we reached here, the player is near a herb
+        if let herbNode = herbBody?.node {
+            nearbyHerbNode = herbNode
+            print("🌿 Player is near: \(herbNode.name ?? "unknown herb")")
         }
     }
+
     
     func didEnd(_ contact: SKPhysicsContact) {
         let names = [contact.bodyA.node?.name, contact.bodyB.node?.name]
@@ -130,6 +162,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func update(_ currentTime: TimeInterval) {
+        
+        if !hasSpawnedLumberjack {
+            if let questComponent = self.playerEntity.component(ofType: QuestComponent.self),
+               questComponent.isQuestActive(named: "Find the Lumberjack") {
+                spawnLumberjack()
+                spawnWood()
+                hasSpawnedLumberjack = true
+            }
+        } else {
+            if !hasSpawnedHerbs {
+                if let questComponent = self.playerEntity.component(ofType: QuestComponent.self),
+                   questComponent.isQuestActive(named: "Herb for the Lumberjack") {
+                    spawnHerbAuras()
+                    hasSpawnedHerbs = true
+                }
+            }
+        }
+        
         if lastUpdateTime == 0 {
             lastUpdateTime = currentTime
         }
@@ -204,11 +254,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         entities.append(playerEntity)
         
-        if let questComponent = playerEntity.component(ofType: QuestComponent.self) {
-            for quest in allQuests {
-                questComponent.addQuest(quest)
-            }
-        }
+//        if let questComponent = playerEntity.component(ofType: QuestComponent.self) {
+//            for quest in allQuests {
+//                questComponent.addQuest(quest)
+//            }
+//        }
         
         GameManager.shared.playerEntity = playerEntity
     }
@@ -251,4 +301,112 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.midBg = ParrallaxBackground(imageName: "TreeFront", imageScaler: 0.5, zPos: -2, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
         self.nearestBg = ParrallaxBackground(imageName: "TreeVeryFront", imageScaler: 0.5, zPos: -1, xPos: -90.893, yPos: -330.587, scene: self, minTiles: 3, maxTiles: 4)
     }
+    
+    func spawnLumberjack() {
+        guard let spawnPoint = childNode(withName: "//lumberjackSpawnPoint") else {
+            print("⚠️ Lumberjack spawn point not found.")
+            return
+        }
+
+        let texture = SKTexture(imageNamed: "Lumberidle1")
+        let npcNode = SKSpriteNode(texture: texture) // Placeholder for first frame
+        npcNode.name = "npc_lumberjack"
+        npcNode.position = spawnPoint.position
+        npcNode.zPosition = -1
+        npcNode.setScale(0.55)
+
+        npcNode.physicsBody = SKPhysicsBody(rectangleOf: npcNode.size)
+        npcNode.physicsBody?.categoryBitMask = PhysicsCategory.npc
+        npcNode.physicsBody?.contactTestBitMask = PhysicsCategory.player
+        npcNode.physicsBody?.collisionBitMask = PhysicsCategory.ground
+        npcNode.physicsBody?.isDynamic = true
+        npcNode.physicsBody?.allowsRotation = false
+        npcNode.physicsBody?.affectedByGravity = true
+
+        let textureAtlas = SKTextureAtlas(named: "Lumber-Idle")
+        let idleFrames = (1...2).map { textureAtlas.textureNamed("Lumberidle\($0)") }
+        idleFrames.forEach { $0.filteringMode = .nearest }
+
+        let idleAction = SKAction.repeatForever(
+            SKAction.animate(with: idleFrames, timePerFrame: 0.3)
+        )
+        npcNode.run(idleAction, withKey: "idle")
+
+        addChild(npcNode)
+    }
+    
+    func spawnWood() {
+        guard let spawnPoint = childNode(withName: "//woodSpawnPoint") else {
+            print("⚠️ wood spawn point not found.")
+            return
+        }
+
+        let texture = SKTexture(imageNamed: "Wood")
+        let wood = SKSpriteNode(texture: texture) // Placeholder for first frame
+        wood.name = "wood"
+        wood.position = spawnPoint.position
+        wood.zPosition = -2
+        wood.setScale(0.55)
+
+        wood.physicsBody = SKPhysicsBody(rectangleOf: wood.size)
+        wood.physicsBody?.categoryBitMask = PhysicsCategory.player
+        wood.physicsBody?.contactTestBitMask = PhysicsCategory.npc
+        wood.physicsBody?.collisionBitMask = 0
+        wood.physicsBody?.isDynamic = false
+
+        addChild(wood)
+    }
+    
+    func spawnHerbAuras() {
+        let auraTexture = SKTexture(imageNamed: "Aura1")
+        let spawnNames = ["herb1", "herb2", "herb3"]
+
+        for name in spawnNames {
+            guard let spawnPoint = childNode(withName: "//\(name)") else {
+                print("⚠️ Spawn point not found: \(name)")
+                continue
+            }
+
+            // Spawn Aura1 as the herb
+            let herbAura = SKSpriteNode(texture: auraTexture)
+            herbAura.name = name // "herb1", "herb2", or "herb3"
+            herbAura.position = spawnPoint.position
+            herbAura.zPosition = spawnPoint.zPosition + 1
+            herbAura.setScale(0.8)
+
+            // Optional glow effect
+            let fadeOut = SKAction.fadeAlpha(to: 0.5, duration: 0.5)
+            let fadeIn = SKAction.fadeAlpha(to: 1.0, duration: 0.5)
+            let pulse = SKAction.sequence([fadeOut, fadeIn])
+            herbAura.run(SKAction.repeatForever(pulse))
+
+            // Add physics body for collection
+            let size: CGSize
+            let center: CGPoint
+
+            if name == "herb3" {
+                // Special floating herb — hitbox extended down
+                let extendedHeight: CGFloat = herbAura.size.height + 50
+                size = CGSize(width: herbAura.size.width, height: extendedHeight)
+                center = CGPoint(x: 0, y: -25)
+            } else {
+                // Normal hitbox
+                size = herbAura.size
+                center = .zero
+            }
+
+            let hitbox = SKPhysicsBody(rectangleOf: size, center: center)
+            hitbox.isDynamic = false
+            hitbox.affectedByGravity = false
+            hitbox.categoryBitMask = PhysicsCategory.collectible
+            hitbox.contactTestBitMask = PhysicsCategory.player
+            hitbox.collisionBitMask = 0
+
+            herbAura.physicsBody = hitbox
+
+            // Add to scene
+            addChild(herbAura)
+        }
+    }
+
 }

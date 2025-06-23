@@ -9,7 +9,7 @@ import GameplayKit
 
 class MovementComponent: GKComponent {
     var joystickDirection = CGVector.zero
-    var speed: CGFloat = 200
+    var speed: CGFloat = 200 * 5
     
     weak var spriteNode: SKSpriteNode?
     

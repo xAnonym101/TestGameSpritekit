@@ -30,7 +30,7 @@ class SKButtonNode: SKSpriteNode {
         
         // Label setup
         labelNode.text = title
-        labelNode.fontName = "AvenirNext-Bold"
+        labelNode.fontName = "VT323"
         labelNode.fontSize = fontSize
         labelNode.fontColor = fontColor
         labelNode.verticalAlignmentMode = verticalAlignment

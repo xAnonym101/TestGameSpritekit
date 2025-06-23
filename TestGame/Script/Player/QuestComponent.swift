@@ -24,15 +24,24 @@ class QuestComponent: GKComponent {
     
     private(set) var quests: [Quest] = []
     
-    func addQuest(_ quest: Quest) {
-        guard !quests.contains(where: { $0.name == quest.name }) else {
-            print("⚠️ Quest \(quest.name) already exists.")
+    func addQuests(named name: String) {
+        guard let quest = allQuests[name] else {
+            print("❌ Quest with name '\(name)' not found in QuestDatabase.")
             return
         }
+
+        guard !quests.contains(where: { $0.name == quest.name }) else {
+            print("⚠️ Quest '\(quest.name)' already exists.")
+            return
+        }
+
+        print("✅ Quest added: \(quest.name)")
         quests.append(quest)
     }
+
     
     func startQuest(named name: String) {
+        addQuests(named: name)
         guard let index = quests.firstIndex(where: { $0.name == name }) else { return }
         var quest = quests[index]
         quest.isStarted = true

@@ -22,8 +22,8 @@ class SKVisNovNode: SKNode {
     
     private var targetHeightPortrait : CGFloat = 500
     
-    let baseFontSize: CGFloat = 20
-    let minFontSize: CGFloat = 16
+    let baseFontSize: CGFloat = 34
+    let minFontSize: CGFloat = 24
     let reductionPerWord: CGFloat = 0.25
     
     override init() {
@@ -66,8 +66,8 @@ class SKVisNovNode: SKNode {
         
         // Name Label
         textNameNode.fontColor = .white
-        textNameNode.fontSize = 24
-        textNameNode.fontName = "AvenirNext-Bold"
+        textNameNode.fontSize = 28
+        textNameNode.fontName = "VT323"
         textNameNode.zPosition = 2
         textNameNode.position = CGPoint(x: 0, y: backgroundTextNode.size.height / 2 - 40)
         textNovNode.blendMode = .add
@@ -76,7 +76,7 @@ class SKVisNovNode: SKNode {
         // Text label
         textNovNode.fontColor = .white
         textNovNode.fontSize = 20
-        textNovNode.fontName = "AvenirNext-Regular"
+        textNovNode.fontName = "VT323"
         textNovNode.horizontalAlignmentMode = .center
         textNovNode.verticalAlignmentMode = .center
         textNovNode.preferredMaxLayoutWidth = backgroundTextNode.size.width * 0.7
@@ -166,7 +166,7 @@ class SKVisNovNode: SKNode {
                 color: .white,
                 size: CGSize(width: buttonWidth, height: buttonHeight),
                 title: "\(choice.text)",
-                fontSize: 18,
+                fontSize: 24,
                 fontColor: .black,
                 verticalAlignment: .center,
                 horizontalAlignment: .center,

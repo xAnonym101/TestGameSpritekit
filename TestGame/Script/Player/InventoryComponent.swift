@@ -14,7 +14,7 @@ class InventoryComponent: GKComponent {
         items[item, default: 0] += count
     }
     
-    func removeItem(_ item: String, count: Int = 1) {
+    func removeItem(_ item: String, count: Int) {
         guard let currentCount = items[item] else { return }
         let newCount = max(0, currentCount - count)
         if newCount == 0 {
