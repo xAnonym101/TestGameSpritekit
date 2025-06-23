@@ -1,15 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "QuestIcon.png",
+      "filename" : "StartButtonTexture.png",
       "idiom" : "universal"
     }
   ],
   "info" : {
     "author" : "xcode",
     "version" : 1
-  },
-  "properties" : {
-    "compression-type" : "gpu-optimized-smallest"
   }
 }

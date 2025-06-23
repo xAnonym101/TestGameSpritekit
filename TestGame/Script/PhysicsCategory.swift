@@ -12,4 +12,5 @@ struct PhysicsCategory {
     static let ground: UInt32 = 0x1 << 1 // 2
     static let npc: UInt32 = 0x1 << 2
     static let collectible: UInt32 = 0x1 << 3
+    static let interactable: UInt32 = 0x1 << 4
 }

@@ -28,6 +28,10 @@ class WispPointComponent: GKComponent {
     func addWispRed() {
         wispRed += 1
     }
+    
+    func getBlueWisp() -> Int {
+        return self.wispBlue
+    }
 }
 
 extension WispPointComponent: DialogPlaceholderProvider {

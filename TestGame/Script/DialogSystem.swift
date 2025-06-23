@@ -11,6 +11,11 @@ struct DialogLine {
     let text: String
     let speaker: String
     let expression: String
+
+    // Cutscene overlay options
+    let overlayAlpha: CGFloat?
+    let overlayTexture: String?
+    let overlayColor: SKColor? 
 }
 
 struct DialogChoice {
@@ -80,7 +85,10 @@ class DialogSystem {
             let resolvedLine = DialogLine(
                 text: resolver?.resolve(text: line.text) ?? line.text,
                 speaker: resolver?.resolve(text: line.speaker) ?? line.speaker,
-                expression: line.expression
+                expression: line.expression,
+                overlayAlpha: line.overlayAlpha,
+                overlayTexture: line.overlayTexture,
+                overlayColor: line.overlayColor
             )
             let portraitImageName = (line.speaker == npc.name
                                       ? npc.portraits[line.expression]

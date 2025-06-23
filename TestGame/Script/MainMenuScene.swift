@@ -32,27 +32,54 @@ class MainMenuScene: SKScene {
         addChild(background)
         
         
+        let startTexture = SKTexture(imageNamed: "StartButtonTexture")
+        let originalSize = startTexture.size()
+        let scaleFactor: CGFloat = 0.5 // Scale to 50% of original size
+
         let startButton = SKButtonNode(
-                texture: nil,
-                size: CGSize(width: 400, height: 100),
-                title: "Start",
-                fontSize: 100,
-                fontColor: .black,
-                horizontalAlignment: .right,
-                soundName: nil,
-                action: {
-                    print("Button clicked")
-                    if let view = self.view {
-                        if let newScene = GameScene(fileNamed: "GameScene") {
-                            newScene.scaleMode = .aspectFill
-                            view.presentScene(newScene)
-                        }
-                    }
-                }
+            texture: startTexture,
+            size: CGSize(width: originalSize.width * scaleFactor,
+                         height: originalSize.height * scaleFactor),
+            title: " ",
+            fontSize: 48,
+            fontColor: .white,
+            horizontalAlignment: .center,
+            soundName: "click.wav",
+            action: nil
         )
-        startButton.anchorPoint = .zero
-        startButton.position = CGPoint(x: -100, y: -100)
+
+        let breatheIn = SKAction.scale(to: 1.05, duration: 1.5)
+        breatheIn.timingMode = .easeInEaseOut
+        let breatheOut = SKAction.scale(to: 0.95, duration: 1.5)
+        breatheOut.timingMode = .easeInEaseOut
+        let breatheSequence = SKAction.sequence([breatheIn, breatheOut])
+        let breatheForever = SKAction.repeatForever(breatheSequence)
+
+        startButton.run(breatheForever, withKey: "idle_animation")
+
+        startButton.action = {
+            startButton.removeAction(forKey: "idle_animation")
+            
+            let pressDown = SKAction.scale(to: 0.9, duration: 0.1)
+            let pressUp = SKAction.scale(to: 1.0, duration: 0.1)
+            let wait = SKAction.wait(forDuration: 0.05)
+
+            startButton.run(.sequence([pressDown, pressUp, wait]), completion: {
+                startButton.run(breatheForever, withKey: "idle_animation")
+                
+                if let view = startButton.scene?.view,
+                   let newScene = GameScene(fileNamed: "GameScene") {
+                    newScene.scaleMode = .aspectFill
+                    let transition = SKTransition.fade(withDuration: 1.0)
+                    view.presentScene(newScene, transition: transition)
+                }
+            })
+        }
+
+        startButton.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        startButton.position = CGPoint(x: 0, y: -150)
         addChild(startButton)
+
         
     }
     //End

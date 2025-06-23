@@ -141,6 +141,33 @@ class SKVisNovNode: SKNode {
             playerSprite.alpha = 0.4
             npcSprite.alpha = 0.4
         }
+        
+        // to HOPEFULLY retexture and change the alpha of the background:
+        // Animate texture change
+        if let textureName = line.overlayTexture {
+            let newTexture = SKTexture(imageNamed: textureName)
+            newTexture.filteringMode = .nearest
+            backgroundNode.run(.setTexture(newTexture, resize: false))
+        } else {
+            backgroundNode.texture = nil
+        }
+
+        // Animate alpha
+        if let alpha = line.overlayAlpha {
+            backgroundNode.run(.fadeAlpha(to: alpha, duration: 0.3))
+        }
+
+        // Animate color (optional – can be instant or tweened using custom action)
+        if let color = line.overlayColor {
+            let colorize = SKAction.customAction(withDuration: 0.3) { node, _ in
+                if let sprite = node as? SKSpriteNode {
+                    sprite.color = color
+                }
+            }
+            backgroundNode.run(colorize)
+        }
+
+
     }
     
     func clearDialog() {

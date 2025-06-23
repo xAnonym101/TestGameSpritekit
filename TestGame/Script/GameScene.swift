@@ -55,6 +55,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var hasSpawnedLumberjack = false
     var hasSpawnedHerbs = false
     var nearbyHerbNode: SKNode?
+    var isNearGate = false
     
     override func sceneDidLoad() {
         
@@ -68,6 +69,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupCameraPlayer()
         setupNpc()
         setupParallax()
+        setupGate()
         
         dialogSystem.setPlayerPortraits(playerPortrait)
         dialogSystem.registerDialogTree(npcGuardian)
@@ -91,26 +93,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Sort out player and collectible contact
         let playerBody: SKPhysicsBody?
-        let herbBody: SKPhysicsBody?
+        let otherBody: SKPhysicsBody?
 
         if bodyA.categoryBitMask == PhysicsCategory.player && bodyB.categoryBitMask == PhysicsCategory.collectible {
-            playerBody = bodyA
-            herbBody = bodyB
-        } else if bodyB.categoryBitMask == PhysicsCategory.player && bodyA.categoryBitMask == PhysicsCategory.collectible {
-            playerBody = bodyB
-            herbBody = bodyA
-        } else {
-            // Check for NPC contact (your existing behavior)
-            let names = [bodyA.node?.name, bodyB.node?.name]
-            if let npcName = names.first(where: { $0?.starts(with: "npc_") == true }) {
-                contactedNpcId = npcName
-                print("Player contacted: \(npcName!)")
+                playerBody = bodyA
+                otherBody = bodyB
+            } else if bodyB.categoryBitMask == PhysicsCategory.player && bodyA.categoryBitMask == PhysicsCategory.collectible {
+                playerBody = bodyB
+                otherBody = bodyA
+            } else if bodyA.categoryBitMask == PhysicsCategory.player && bodyB.node?.name == "Shine" {
+                // Player touching gate
+                isNearGate = true
+                print("true")
+                return
+            } else if bodyB.categoryBitMask == PhysicsCategory.player && bodyA.node?.name == "Shine" {
+                // Player touching gate
+                isNearGate = true
+                print("true")
+                return
+            } else {
+                // Check for NPC contact
+                let names = [bodyA.node?.name, bodyB.node?.name]
+                if let npcName = names.first(where: { $0?.starts(with: "npc_") == true }) {
+                    contactedNpcId = npcName
+                    print("Player contacted: \(npcName!)")
+                }
+                return
             }
-            return
-        }
 
         // If we reached here, the player is near a herb
-        if let herbNode = herbBody?.node {
+        if let herbNode = otherBody?.node {
             nearbyHerbNode = herbNode
             print("🌿 Player is near: \(herbNode.name ?? "unknown herb")")
         }
@@ -122,6 +134,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if let npcName = names.compactMap({ $0 }).first(where: { $0 == contactedNpcId }) {
             contactedNpcId = nil
             print("Player left: \(npcName)")
+        }
+        
+        if contact.bodyA.node?.name == "Shine" || contact.bodyB.node?.name == "Shine" {
+            print("false")
+            isNearGate = false
         }
     }
     
@@ -135,22 +152,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             stateMachine.enter(PauseState.self)
             return
         }
-        
-//        if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseQuestIcon" {
-//            print("Quest List Opened")
-//            stateMachine.enter(QuestListState.self)
-//            return
-//        }
 
         if let node = self.atPoint(location) as? SKSpriteNode, node.name == "pauseButton" {
             print("Pause button tapped")
-            stateMachine.enter(PauseState.self)
+            
+            // Add the click animation
+            let pressDown = SKAction.scale(to: 0.9, duration: 0.1)
+            let pressUp = SKAction.scale(to: 1.0, duration: 0.1)
+            let wait = SKAction.wait(forDuration: 0.05)
+
+            node.run(.sequence([pressDown, pressUp, wait]), completion: {
+                self.stateMachine.enter(PauseState.self)
+            })
             return
         }
         
         if let node = self.atPoint(location) as? SKSpriteNode, node.name == "closeButton" {
             print("Close button tapped")
-            stateMachine.enter(PlayingState.self)
+            
+            // Add the click animation
+            let pressDown = SKAction.scale(to: 0.9, duration: 0.1)
+            let pressUp = SKAction.scale(to: 1.0, duration: 0.1)
+            let wait = SKAction.wait(forDuration: 0.05)
+
+            node.run(.sequence([pressDown, pressUp, wait]), completion: {
+                self.stateMachine.enter(PlayingState.self)
+            })
             return
         }
         
@@ -408,5 +435,103 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             addChild(herbAura)
         }
     }
+    
+    func handleGateInteraction() {
+        guard let inventory = GameManager.shared.playerEntity?.component(ofType: WispPointComponent.self) else {
+            return
+        }
+        
+        if inventory.getBlueWisp() < 1 {
+            print("🚪 Not enough wisps")
+
+            // Create dark overlay (semi-transparent)
+            let overlay = SKShapeNode(rectOf: self.size)
+            overlay.fillColor = .black
+            overlay.alpha = 0.0
+            overlay.zPosition = 998
+            overlay.name = "wispWarningOverlay"
+            overlay.isUserInteractionEnabled = false
+
+            // Create label
+            let label = SKLabelNode(text: "You need at least 1 Wisp to proceed.")
+            label.fontName = "AvenirNext-Bold"
+            label.fontSize = 32
+            label.fontColor = .white
+            label.alpha = 0.0
+            label.zPosition = 999
+            label.name = "wispWarningLabel"
+            
+            if let cam = self.camera {
+                cam.addChild(overlay)
+                cam.addChild(label)
+            }
+
+            // Animate fade in and out
+            let fadeIn = SKAction.fadeAlpha(to: 0.5, duration: 0.3)
+            let wait = SKAction.wait(forDuration: 2.0)
+            let fadeOut = SKAction.fadeOut(withDuration: 0.3)
+            let remove = SKAction.removeFromParent()
+
+            overlay.run(.sequence([fadeIn, wait, fadeOut, remove]))
+            label.run(.sequence([SKAction.fadeIn(withDuration: 0.3), wait, SKAction.fadeOut(withDuration: 0.3), remove]))
+
+            return
+        }
+
+        print("🚪 Interacting with gate...")
+
+        // Fade to black
+        // Create fade node centered on camera
+        let fade = SKShapeNode(rectOf: self.size)
+        fade.fillColor = .black
+        fade.alpha = 0.0
+        fade.zPosition = 999
+        fade.name = "fadeNode"
+
+        if let cam = self.camera {
+            fade.position = cam.position
+        }
+        self.addChild(fade)
+
+        let fadeIn = SKAction.fadeAlpha(to: 1.0, duration: 1.5)
+        let wait = SKAction.wait(forDuration: 1.0)
+
+        // Show text
+        let label = SKLabelNode(text: "To be continued...")
+        label.fontName = "AvenirNext-Bold"
+        label.fontSize = 60
+        label.fontColor = .white
+        label.alpha = 0.0
+        label.zPosition = 1000
+        if let cam = self.camera {
+            label.position = cam.position
+        }
+        self.addChild(label)
+
+        let fadeTextIn = SKAction.fadeIn(withDuration: 1.0)
+        let waitMore = SKAction.wait(forDuration: 2.0)
+
+        let returnToMenu = SKAction.run {
+            if let view = self.view, let menuScene = SKScene(fileNamed: "MainMenuScene") {
+                menuScene.scaleMode = .aspectFill
+                view.presentScene(menuScene, transition: .fade(withDuration: 2.0))
+            }
+        }
+
+        fade.run(fadeIn)
+        label.run(.sequence([wait, fadeTextIn, waitMore, returnToMenu]))
+    }
+
+    
+    func setupGate() {
+        if let gate = self.childNode(withName: "//Shine") as? SKSpriteNode {
+            gate.physicsBody = SKPhysicsBody(rectangleOf: gate.size)
+            gate.physicsBody?.isDynamic = false
+            gate.physicsBody?.categoryBitMask = PhysicsCategory.interactable
+            gate.physicsBody?.contactTestBitMask = PhysicsCategory.player
+            gate.physicsBody?.collisionBitMask = 0
+        }
+    }
+
 
 }

@@ -30,6 +30,7 @@ class PlayingState: GameState {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self = self,
                   let gamepad = self.scene.virtualController?.controller?.extendedGamepad else { return }
+            let scene = self.scene
 
             gamepad.leftThumbstick.valueChangedHandler = { _, x, _ in
                 self.joystickDirection = CGVector(dx: CGFloat(x), dy: 0)
@@ -37,7 +38,26 @@ class PlayingState: GameState {
 
             gamepad.buttonA.pressedChangedHandler = { _, _, pressed in
                 guard pressed else { return }
+                
+                if scene.isNearGate {
+                    if let wispAmount = scene.playerEntity.component(ofType: WispPointComponent.self)?.getBlueWisp(), wispAmount > 1 {
+                        // ✅ Disable controller before triggering the interaction
+                        gamepad.valueChangedHandler = nil
+                        gamepad.leftThumbstick.valueChangedHandler = nil
+                        gamepad.buttonA.pressedChangedHandler = nil
+                        gamepad.buttonB.pressedChangedHandler = nil
+                        scene.virtualController?.controller?.extendedGamepad?.valueChangedHandler = nil
+                        scene.virtualController?.disconnect()
+                        scene.virtualController = nil
 
+                        // Clear reference entirely (optional but helps)
+                        scene.virtualController = nil
+
+                        scene.handleGateInteraction()
+                    } else {
+                        scene.handleGateInteraction()
+                    }
+                }
                 self.tryStartNpcDialog()
             }
         }
