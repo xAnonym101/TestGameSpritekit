@@ -15,7 +15,7 @@ struct DialogLine {
 
 struct DialogChoice {
     let text: String
-    let action: (() -> Void)
+    let action: (() -> Void)?
     let requiredItems: [String: Int]?
     let followUpDialog: [DialogLine]?
     let followUpChoices: [DialogChoice]?

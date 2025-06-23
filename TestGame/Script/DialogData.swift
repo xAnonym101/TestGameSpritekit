@@ -32,6 +32,9 @@ let npcGuardian = NpcDialogTree(
             choices: [
                 DialogChoice(text: "I want to buy some weapons.",
                              action: nil,
+                             requiredItems: [
+                                :
+                             ],
                              followUpDialog: [
                                 DialogLine(text: "I want to buy some weapons.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "I'm sorry, I don't have any weapons for sale right now.", speaker: "Guardian", expression: "sad"),
@@ -40,6 +43,9 @@ let npcGuardian = NpcDialogTree(
                              followUpChoices: nil),
                 DialogChoice(text: "I want to upgrade my current weapon.",
                              action: nil,
+                             requiredItems: [
+                                :
+                             ],
                              followUpDialog: [
                                 DialogLine(text: "I want to upgrade my current weapon.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "I'm sorry, I don't have any materials to upgrade your weapon right now.", speaker: "Guardian", expression: "sad"),
@@ -48,6 +54,9 @@ let npcGuardian = NpcDialogTree(
                              followUpChoices: nil),
                 DialogChoice(text: "Later.",
                              action: nil,
+                             requiredItems: [
+                                :
+                             ],
                              followUpDialog: [
                                 DialogLine(text: "Later.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "Come back if you need help.", speaker: "Guardian", expression: "neutral")
@@ -72,6 +81,9 @@ let npcGuardian = NpcDialogTree(
             choices: [
                 DialogChoice(text: "Actually, I heard that you need some help with something.",
                              action: nil,
+                             requiredItems: [
+                                :
+                             ],
                              followUpDialog: [
                                 DialogLine(text: "Actually, I heard that you need some help with something.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "Can you tell me more about it?", speaker: "{playerName}", expression: "neutral"),
@@ -103,6 +115,9 @@ let npcGuardian = NpcDialogTree(
                                              followUpChoices: nil),
                                 DialogChoice(text: "I'm sorry, I can't help you.",
                                              action: nil,
+                                             requiredItems: [
+                                                :
+                                             ],
                                              followUpDialog: [
                                                 DialogLine(text: "I'm sorry, I can't help you.", speaker: "{playerName}", expression: "neutral"),
                                                 DialogLine(text: "I understand.", speaker: "Guardian", expression: "neutral")
@@ -113,6 +128,9 @@ let npcGuardian = NpcDialogTree(
                             ),
                 DialogChoice(text: "Later.",
                              action: nil,
+                             requiredItems: [
+                                :
+                             ],
                              followUpDialog: [
                                 DialogLine(text: "Later.", speaker: "{playerName}", expression: "neutral"),
                                 DialogLine(text: "Come back if you need help.", speaker: "Guardian", expression: "happy")
