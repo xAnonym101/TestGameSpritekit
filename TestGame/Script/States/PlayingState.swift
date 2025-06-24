@@ -14,6 +14,10 @@ class PlayingState: GameState {
     
     override func didEnter(from previousState: GKState?) {
         print("PlayingState")
+        if let move = scene.playerEntity.component(ofType: MovementComponent.self) {
+            move.enabled()
+            move.setDirection(.zero)
+        }
         scene.visNovNode.isHidden = true
         setupController()
     }
@@ -66,6 +70,7 @@ class PlayingState: GameState {
 
     
     override func update(deltaTime seconds: TimeInterval) {
+        print(joystickDirection)
         if scene.visNovNode.isHidden == false {
             joystickDirection = .zero
             if let movement = scene.playerEntity.component(ofType: MovementComponent.self) {
@@ -183,6 +188,19 @@ class PlayingState: GameState {
         print("✅ Collected herb: \(herb.name ?? "?")")
     }
 
+    override func willExit(to nextState: GKState) {
+        guard let cameraNode = scene.camera else { return }
+        if let move = scene.playerEntity.component(ofType: MovementComponent.self) {
+            move.disabled()
+            move.setDirection(.zero)
+            if let gamepad = scene.virtualController?.controller?.extendedGamepad {
+                gamepad.leftThumbstick.valueChangedHandler = nil
+                gamepad.buttonA.pressedChangedHandler = nil
+                joystickDirection = .zero
+            }
+        }
+        cameraNode.childNode(withName: "pauseButton")?.removeFromParent()
+    }
     
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
         return stateClass == DialogState.self || stateClass == PauseState.self

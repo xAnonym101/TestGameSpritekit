@@ -18,22 +18,27 @@ class MovementComponent: GKComponent {
     var idleFrames: [SKTexture] = []
     var audioFootstep: SKAction!
     
+    var isEnabled = true
+    
     private var isRunning: Bool = false
     
     override func update(deltaTime seconds: TimeInterval) {
-            guard let sprite = spriteNode else { return }
+        guard isEnabled else { return }
+        guard let sprite = spriteNode else { return }
 
-            let dx = joystickDirection.dx * speed * CGFloat(seconds)
-            sprite.position.x += dx
-            
-            handleAnimation(sprite: sprite)
-        }
+        let dx = joystickDirection.dx * speed * CGFloat(seconds)
+        sprite.position.x += dx
+        
+        handleAnimation(sprite: sprite)
+    }
     
     func setDirection(_ direction: CGVector) {
+        guard isEnabled else { return }
         joystickDirection = direction
     }
         
     private func handleAnimation(sprite: SKSpriteNode) {
+        guard isEnabled else { return }
         let isMoving = abs(joystickDirection.dx) > 0.1
         
         // Flip direction
@@ -57,5 +62,32 @@ class MovementComponent: GKComponent {
             let idle = SKAction.repeatForever(SKAction.animate(with: idleFrames, timePerFrame: 0.3))
             sprite.run(idle, withKey: "idle")
         }
+    }
+    
+    func stopIfDisabled() {
+        guard !isEnabled else { return }
+
+        // Stop joystick movement
+        joystickDirection = .zero
+
+        // Stop player sprite movement
+        spriteNode?.removeAllActions()
+
+        // Optional: you can also explicitly reset to idle pose
+        if let sprite = spriteNode {
+            let idle = SKAction.repeatForever(SKAction.animate(with: idleFrames, timePerFrame: 0.3))
+            sprite.run(idle, withKey: "idle")
+        }
+    }
+    
+    func enabled() {
+        isEnabled = true
+        print("isEnabled is set to: ", isEnabled)
+    }
+    
+    func disabled() {
+        isEnabled = false
+        stopIfDisabled()
+        print("isEnabled is set to: ", isEnabled)
     }
 }
