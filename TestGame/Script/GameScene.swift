@@ -21,7 +21,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //            QuestListState(scene: self)
         ]
         stateMachine = GKStateMachine(states: states)
-        stateMachine.enter(PlayingState.self)
     }
     
     var entities = [GKEntity]()
@@ -70,6 +69,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupNpc()
         setupParallax()
         setupGate()
+        stateMachine.enter(PlayingState.self)
         
         dialogSystem.setPlayerPortraits(playerPortrait)
         dialogSystem.registerDialogTree(npcGuardian)
@@ -278,14 +278,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             movement.audioFootstep = audioFootstep
         }
         
-        
         entities.append(playerEntity)
-        
-//        if let questComponent = playerEntity.component(ofType: QuestComponent.self) {
-//            for quest in allQuests {
-//                questComponent.addQuest(quest)
-//            }
-//        }
         
         GameManager.shared.playerEntity = playerEntity
     }

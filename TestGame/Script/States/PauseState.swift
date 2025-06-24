@@ -24,7 +24,6 @@ class PauseState: GameState {
                 let closeButton = SKSpriteNode(texture: texture, size: CGSize(width: 70, height: 70))
                 closeButton.name = closeButtonName
                 closeButton.zPosition = 101
-                cameraNode.childNode(withName: "pauseButton")?.removeFromParent()
                 cameraNode.addChild(closeButton)
                 
                 closeButton.position = CGPoint(

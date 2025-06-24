@@ -36,6 +36,10 @@ class DialogState: GameState {
         }
     }
     
+//    override func willExit(to nextState: GKState) {
+//        scene.moveStopper(moveBool: true)
+//    }
+    
     override func isValidNextState(_ stateClass: AnyClass) -> Bool {
         return stateClass == PlayingState.self
     }
