@@ -10,6 +10,7 @@ import GameController
 class PlayingState: GameState {
     private var joystickDirection = CGVector.zero
     private var timeElapsed: TimeInterval = 0
+    let maxInteractionDistance: CGFloat = 150
     
     override func didEnter(from previousState: GKState?) {
         print("PlayingState")
@@ -83,7 +84,7 @@ class PlayingState: GameState {
                 texture.filteringMode = .nearest
                 let pauseButton = SKSpriteNode(texture: texture, size: CGSize(width: 80, height: 80))
                 pauseButton.name = buttonName
-                pauseButton.zPosition = 100
+                pauseButton.zPosition = 50
                 cameraNode.addChild(pauseButton)
 
                 pauseButton.position = CGPoint(
@@ -114,10 +115,30 @@ class PlayingState: GameState {
     }
     
     func tryStartNpcDialog() {
-        guard let npcId = scene.contactedNpcId else {
-            print("No NPC contact detected.")
+        guard let playerNode = scene.playerEntity.component(ofType: RenderComponent.self)?.node else {
+            print("Player node not found.")
             return
         }
+
+        // Find all NPC nodes
+        let npcNodes = scene.children.compactMap { node -> SKNode? in
+            guard let name = node.name, name.starts(with: "npc_") else { return nil }
+            return node
+        }
+
+        // Filter by distance
+        let nearbyNpcs = npcNodes.filter {
+            $0.position.distance(to: playerNode.position) <= maxInteractionDistance
+        }
+
+        guard let nearestNpc = nearbyNpcs.min(by: {
+            $0.position.distance(to: playerNode.position) < $1.position.distance(to: playerNode.position)
+        }) else {
+            print("No nearby NPC found within range.")
+            return
+        }
+        
+        let npcId = nearestNpc.name!
         
         guard let npcTree = scene.dialogSystem.getDialogTree(for: npcId) else {
             print("NPC dialog tree not found for: \(npcId)")
@@ -128,6 +149,7 @@ class PlayingState: GameState {
             print("DialogProgressComponent not found.")
             return
         }
+        
         
         let allStates = npcTree.dialogs.keys
                 .filter { $0 != "default" }

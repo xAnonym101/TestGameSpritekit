@@ -19,10 +19,11 @@ class SKVisNovNode: SKNode {
     private var choiceButtons : [SKButtonNode] = []
     private var onChoiceSelected : ((Int) -> Void)?
     private var buttonStartY = CGFloat()
+    private var sceneSizeRev: CGSize?
     
     private var targetHeightPortrait : CGFloat = 500
     
-    let baseFontSize: CGFloat = 34
+    let baseFontSize: CGFloat = 30
     let minFontSize: CGFloat = 24
     let reductionPerWord: CGFloat = 0.25
     
@@ -56,7 +57,7 @@ class SKVisNovNode: SKNode {
         backgroundTextNode.color = .black
         backgroundTextNode.alpha = 1
         backgroundTextNode.size = CGSize(width: 600, height: 160)
-        backgroundTextNode.zPosition = 1
+        backgroundTextNode.zPosition = 3
         backgroundTextNode.position = CGPoint(x: 0, y: (-frame.height / 1.5)+(backgroundTextNode.size.height / 0.9))
         addChild(backgroundTextNode)
         
@@ -68,7 +69,7 @@ class SKVisNovNode: SKNode {
         textNameNode.fontColor = .white
         textNameNode.fontSize = 28
         textNameNode.fontName = "VT323"
-        textNameNode.zPosition = 2
+        textNameNode.zPosition = 4
         textNameNode.position = CGPoint(x: 0, y: backgroundTextNode.size.height / 2 - 40)
         textNovNode.blendMode = .add
         backgroundTextNode.addChild(textNameNode)
@@ -81,7 +82,7 @@ class SKVisNovNode: SKNode {
         textNovNode.verticalAlignmentMode = .center
         textNovNode.preferredMaxLayoutWidth = backgroundTextNode.size.width * 0.7
         textNovNode.position = CGPoint(x: 0, y: -10)
-        textNovNode.zPosition = 2
+        textNovNode.zPosition = 4
         textNovNode.numberOfLines = 0
         backgroundTextNode.addChild(textNovNode)
     }
@@ -97,6 +98,10 @@ class SKVisNovNode: SKNode {
         backgroundNode.size = CGSize(width: sceneSize.width, height: sceneSize.height)
         
         buttonStartY = sceneSize.height * 0.6
+        
+        sceneSizeRev = sceneSize
+        
+        print(sceneSize)
     }
     
     func updateDialog(line: DialogLine, texture: SKTexture?, npcBubbleTexture: String?, npcTextColor: SKColor?) {
@@ -121,7 +126,7 @@ class SKVisNovNode: SKNode {
                 npcSprite.alpha = 0.4
                 
                 backgroundTextNode.texture = SKTexture(imageNamed: "bubble-player")
-                backgroundNode.texture?.filteringMode = .nearest
+                backgroundTextNode.texture?.filteringMode = .nearest
                 textNameNode.fontColor = .white
                 textNovNode.fontColor = .white
             } else {
@@ -131,13 +136,19 @@ class SKVisNovNode: SKNode {
                 playerSprite.alpha = 0.4
                 
                 backgroundTextNode.texture = SKTexture(imageNamed: npcBubbleTexture ?? "bubble-npc")
-                backgroundNode.texture?.filteringMode = .nearest
+                backgroundTextNode.texture?.filteringMode = .nearest
                 textNameNode.fontColor = npcTextColor ?? .white
                 textNovNode.fontColor = npcTextColor ?? .white
             }
-            
+        } else if line.text != "" {
+            npcSprite.alpha = 0
+            playerSprite.alpha = 0
+            npcSprite.texture = nil
+            playerSprite.texture = nil
+            backgroundTextNode.texture = nil
+            backgroundTextNode.color = .black
+            backgroundTextNode.colorBlendFactor = 1
         } else {
-            // If no texture provided, fallback to dim both
             playerSprite.alpha = 0.4
             npcSprite.alpha = 0.4
         }
@@ -147,27 +158,38 @@ class SKVisNovNode: SKNode {
         if let textureName = line.overlayTexture {
             let newTexture = SKTexture(imageNamed: textureName)
             newTexture.filteringMode = .nearest
-            backgroundNode.run(.setTexture(newTexture, resize: false))
-        } else {
-            backgroundNode.texture = nil
-        }
-
-        // Animate alpha
-        if let alpha = line.overlayAlpha {
-            backgroundNode.run(.fadeAlpha(to: alpha, duration: 0.3))
-        }
-
-        // Animate color (optional – can be instant or tweened using custom action)
-        if let color = line.overlayColor {
-            let colorize = SKAction.customAction(withDuration: 0.3) { node, _ in
-                if let sprite = node as? SKSpriteNode {
-                    sprite.color = color
-                }
+            let cutsceneNode = SKSpriteNode(texture: newTexture)
+            if let scene = self.scene {
+                cutsceneNode.position = CGPoint(x: scene.frame.midX, y: scene.frame.midY)
             }
-            backgroundNode.run(colorize)
+            cutsceneNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+            cutsceneNode.setScale(0.5)
+            cutsceneNode.zPosition = 2
+            cutsceneNode.position = CGPoint(x: 0, y: sceneSizeRev!.height / 2)
+            cutsceneNode.name = "cutscene"
+            self.addChild(cutsceneNode)
+            npcSprite.texture = nil
+            playerSprite.texture = nil
+        } else {
+            if let node = self.childNode(withName: "cutscene") {
+                node.removeFromParent()
+            }
         }
 
-
+//        // Animate alpha
+//        if let alpha = line.overlayAlpha {
+//            backgroundNode.run(.fadeAlpha(to: alpha, duration: 0.3))
+//        }
+//
+//        // Animate color (optional – can be instant or tweened using custom action)
+//        if let color = line.overlayColor {
+//            let colorize = SKAction.customAction(withDuration: 0.3) { node, _ in
+//                if let sprite = node as? SKSpriteNode {
+//                    sprite.color = color
+//                }
+//            }
+//            backgroundNode.run(colorize)
+//        }
     }
     
     func clearDialog() {

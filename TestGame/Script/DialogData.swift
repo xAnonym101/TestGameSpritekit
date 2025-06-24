@@ -65,7 +65,7 @@ let npcGuardian = NpcDialogTree(
             ]
         ),
         
-        "quest_01": NpcData(
+        "npc_guardian_quest_01": NpcData(
             name: "Guardian",
             portraits: [
                 "neutral": "GatekeeperVN",
@@ -240,8 +240,8 @@ let npcLumberjack = NpcDialogTree(
                         DialogLine(text: "Ah... I can feel the relief already, thank you.", speaker: "Lumberjack", expression: "happy", overlayAlpha: nil, overlayTexture: nil, overlayColor: .black),
                         DialogLine(text: "Oh, by the way, I found this strange blue wisp earlier.", speaker: "Lumberjack", expression: "neutral", overlayAlpha: 1, overlayTexture: "CutScene1", overlayColor: .black),
                         DialogLine(text: "It seems to resonate with you. Why don't you take it?", speaker: "Lumberjack", expression: "happy", overlayAlpha: 1, overlayTexture: "CutScene1", overlayColor: .black),
-                        DialogLine(text: "You received the Blue Wisp.", speaker: "{playerName}", expression: "neutral", overlayAlpha: 0.5, overlayTexture: nil, overlayColor: .black),
-                        DialogLine(text: "(You feel something change within you...)", speaker: "Narrator", expression: "neutral", overlayAlpha: nil, overlayTexture: nil, overlayColor: .black)
+                        DialogLine(text: "You received the Blue Wisp.", speaker: "System", expression: nil, overlayAlpha: nil, overlayTexture: nil, overlayColor: .black),
+                        DialogLine(text: "(You feel something change within you...)", speaker: "System", expression: nil, overlayAlpha: nil, overlayTexture: nil, overlayColor: .black)
                     ],
                     followUpChoices: nil
                 ),

@@ -10,7 +10,7 @@ import SpriteKit
 struct DialogLine {
     let text: String
     let speaker: String
-    let expression: String
+    let expression: String?
 
     // Cutscene overlay options
     let overlayAlpha: CGFloat?
@@ -90,10 +90,16 @@ class DialogSystem {
                 overlayTexture: line.overlayTexture,
                 overlayColor: line.overlayColor
             )
+            var currentBubbleTextureName: String?
+            if resolvedLine.speaker == npc.name {
+                currentBubbleTextureName = npc.bubbleTextureName
+            } else{
+                currentBubbleTextureName = nil
+            }
             let portraitImageName = (line.speaker == npc.name
-                                      ? npc.portraits[line.expression]
-                                      : playerPortraits[line.expression])
-            onDialogLineDisplayed?(resolvedLine, portraitImageName, npc.bubbleTextureName, npc.textColor)
+                                      ? npc.portraits[line.expression ?? ""]
+                                      : playerPortraits[line.expression ?? ""])
+            onDialogLineDisplayed?(resolvedLine, portraitImageName, currentBubbleTextureName, npc.textColor)
             currentDialogIndex += 1
         } else {
             print("Reached end of dialog lines.")

@@ -113,11 +113,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 return
             } else {
                 // Check for NPC contact
-                let names = [bodyA.node?.name, bodyB.node?.name]
-                if let npcName = names.first(where: { $0?.starts(with: "npc_") == true }) {
-                    contactedNpcId = npcName
-                    print("Player contacted: \(npcName!)")
-                }
+//                let names = [bodyA.node?.name, bodyB.node?.name]
+//                if let npcName = names.first(where: { $0?.starts(with: "npc_") == true }) {
+//                    contactedNpcId = npcName
+//                    print("Player contacted: \(npcName!)")
+//                }
                 return
             }
 
@@ -130,12 +130,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     
     func didEnd(_ contact: SKPhysicsContact) {
-        let names = [contact.bodyA.node?.name, contact.bodyB.node?.name]
-        if let npcName = names.compactMap({ $0 }).first(where: { $0 == contactedNpcId }) {
-            contactedNpcId = nil
-            print("Player left: \(npcName)")
-        }
-        
+//        let names = [contact.bodyA.node?.name, contact.bodyB.node?.name]
+//        if let npcName = names.compactMap({ $0 }).first(where: { $0 == contactedNpcId }) {
+//            contactedNpcId = nil
+//            print("Player left: \(npcName)")
+//        }
+//        
         if contact.bodyA.node?.name == "Shine" || contact.bodyB.node?.name == "Shine" {
             print("false")
             isNearGate = false
@@ -477,6 +477,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
             return
         }
+        
+        virtualController?.disconnect()
 
         print("🚪 Interacting with gate...")
 
