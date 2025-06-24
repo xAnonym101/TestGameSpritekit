@@ -105,7 +105,36 @@ class PauseState: GameState {
                     questListNode.addChild(label)
                 }
             }
-
+            
+            if let inventoryComponent = scene.playerEntity.component(ofType: InventoryComponent.self),
+               let cameraNode = scene.camera,
+               let bookNode = cameraNode.childNode(withName: "bookOverlay") {
+                
+                let inventoryItems = inventoryComponent.items
+                
+                let inventoryListNode = SKNode()
+                inventoryListNode.name = "inventoryListContainer"
+                inventoryListNode.zPosition = 102
+                
+                inventoryListNode.position = CGPoint(
+                    x: bookOverlay.position.x - 280,
+                    y: bookOverlay.position.y - 60
+                )
+                cameraNode.addChild(inventoryListNode)
+                
+                let spacing: CGFloat = 50
+                let baseY: CGFloat = 0
+                
+                for (index,(item, count)) in inventoryItems.enumerated() {
+                    let label = SKLabelNode(fontNamed: "VT323")
+                    label.text = "\(item) x\(count)"
+                    label.fontColor = .black
+                    label.fontSize = 24
+                    label.name = "inventLabel_\(index)"
+                    label.position = CGPoint(x: 0, y: baseY - CGFloat(index) * spacing)
+                    inventoryListNode.addChild(label)
+                }
+            }
         }
     }
     
@@ -116,6 +145,7 @@ class PauseState: GameState {
         cameraNode.childNode(withName: "pauseOverlay")?.removeFromParent()
         cameraNode.childNode(withName: "bookOverlay")?.removeFromParent()
         cameraNode.childNode(withName: "questListContainer")?.removeFromParent()
+        cameraNode.childNode(withName: "inventoryListContainer")?.removeFromParent()
         cameraNode.childNode(withName: "closeButton")?.removeFromParent()
     }
     
